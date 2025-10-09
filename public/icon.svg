@@ -1,0 +1,14 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" rx="24" fill="#dc2626"/>
+  <g transform="translate(48, 48)">
+    <path d="M2 42h20l4-20H8l-6 20z" fill="white"/>
+    <path d="M6 18h12l2-6H4l2 6z" fill="white"/>
+    <path d="M10 6h4v6h-4V6z" fill="white"/>
+    <path d="M2 42v8c0 2 2 4 4 4h12c2 0 4-2 4-4v-8H2z" fill="white"/>
+    <path d="M26 42h16v8c0 2-2 4-4 4h-8c-2 0-4-2-4-4v-8z" fill="white"/>
+    <path d="M30 18h12l-2 6H28l2-6z" fill="white"/>
+    <path d="M32 6h4v6h-4V6z" fill="white"/>
+    <path d="M26 42h-4l4-20h18l-4 20h-14z" fill="white"/>
+  </g>
+  <text x="96" y="160" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold">ChineLogistique</text>
+</svg>

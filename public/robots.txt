@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://chinelogistique.com/sitemap.xml
+
+# Disallow admin pages
+Disallow: /admin
+Disallow: /admin/*
+
+# Allow important pages
+Allow: /
+Allow: /about
+Allow: /services
+Allow: /contact
+Allow: /track
+
+# Crawl delay
+Crawl-delay: 1
