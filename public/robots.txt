@@ -4,6 +4,14 @@ Allow: /
 # Sitemap
 Sitemap: https://chinelogistique.com/sitemap.xml
 
+# Explicitly allow favicon and icon files
+Allow: /favicon.ico
+Allow: /favicon-*.png
+Allow: /apple-touch-icon.png
+Allow: /android-chrome-*.png
+Allow: /icon.svg
+Allow: /site.webmanifest
+
 # Disallow admin pages
 Disallow: /admin
 Disallow: /admin/*

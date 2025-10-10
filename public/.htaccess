@@ -22,9 +22,23 @@
     ExpiresByType image/gif "access plus 1 year"
     ExpiresByType image/svg+xml "access plus 1 year"
     ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresByType image/vnd.microsoft.icon "access plus 1 year"
     ExpiresByType application/pdf "access plus 1 month"
     ExpiresByType text/html "access plus 1 hour"
 </IfModule>
+
+# Favicon specific rules
+<Files "favicon.ico">
+    Header set Cache-Control "public, max-age=31536000"
+    Header set Content-Type "image/x-icon"
+</Files>
+
+<Files "*.png">
+    <If "%{REQUEST_URI} =~ m#favicon#">
+        Header set Cache-Control "public, max-age=31536000"
+    </If>
+</Files>
 
 # Security headers
 <IfModule mod_headers.c>
@@ -45,7 +59,24 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{THE_REQUEST} /+([^?\s]*?)/?(\?[^\s]*)?\s
 RewriteRule ^(.*)$ /%1 [R=301,L]
 
-# Handle React Router
+# Explicitly serve static files first
+RewriteRule ^favicon\.ico$ /favicon.ico [L]
+RewriteRule ^favicon-(.*)\.png$ /favicon-$1.png [L]
+RewriteRule ^apple-touch-icon\.png$ /apple-touch-icon.png [L]
+RewriteRule ^android-chrome-(.*)\.png$ /android-chrome-$1.png [L]
+RewriteRule ^icon\.svg$ /icon.svg [L]
+RewriteRule ^site\.webmanifest$ /site.webmanifest [L]
+RewriteRule ^sitemap\.xml$ /sitemap.xml [L]
+RewriteRule ^robots\.txt$ /robots.txt [L]
+
+# Handle React Router (only for non-static files)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/favicon
+RewriteCond %{REQUEST_URI} !^/sitemap
+RewriteCond %{REQUEST_URI} !^/robots
+RewriteCond %{REQUEST_URI} !^/apple-touch-icon
+RewriteCond %{REQUEST_URI} !^/android-chrome
+RewriteCond %{REQUEST_URI} !^/icon\.svg
+RewriteCond %{REQUEST_URI} !^/site\.webmanifest
 RewriteRule . /index.html [L]
