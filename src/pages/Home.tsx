@@ -5,10 +5,12 @@ import SEO from '../components/SEO';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import CounterAnimation from '../components/CounterAnimation';
+import { useSiteSettings } from '../hooks/useSiteSettings';
 
 export default function Home() {
   const [trackingNumber, setTrackingNumber] = useState('');
   const navigate = useNavigate();
+  const { settings } = useSiteSettings();
 
   const handleTrack = (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,9 +94,9 @@ export default function Home() {
         ></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Welcome to ChineLogistique</h2>
-            <p className="text-gray-600 max-w-3xl mx-auto text-lg">
-              ChineLogistique is a global supplier of transport and logistics solutions.
+            <h2 className="text-4xl font-bold mb-4">Welcome to {settings.company_name}</h2>
+            <p className="text-lg text-gray-600 mb-8">
+              {settings.company_description || `${settings.company_name} is a global supplier of transport and logistics solutions.`}
               We ensure the safe delivery of packages is our top priority.
             </p>
           </div>

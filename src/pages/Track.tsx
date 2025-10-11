@@ -7,6 +7,12 @@ import SEO from '../components/SEO';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
+interface Insurance {
+  name: string;
+  amount: string;
+  paid: boolean;
+}
+
 interface Shipment {
   tracking_number: string;
   status: string;
@@ -36,6 +42,13 @@ interface Shipment {
   receiver_address: string;
   comment: string;
   image_url: string;
+  insurances?: Insurance[];
+  import_tax?: string;
+  import_tax_paid?: boolean;
+  status_date?: string;
+  status_time?: string;
+  tracking_progress?: number;
+  tracking_stage?: string;
 }
 
 export default function Track() {
@@ -161,18 +174,101 @@ export default function Track() {
 
             {shipment && (
               <div className="bg-gray-50 rounded-lg overflow-hidden shadow-lg">
+                {/* Visual Tracking Progress Bar */}
+                <div className="bg-white p-6 border-b-2 border-gray-200">
+                  <h3 className="text-xl font-bold mb-6 text-center">Package Tracking Progress</h3>
+                  <div className="max-w-4xl mx-auto">
+                    {/* Progress Bar */}
+                    <div className="relative mb-8">
+                      <div className="flex justify-between mb-2">
+                        <div className={`flex-1 text-center ${
+                          shipment.tracking_stage === 'picked_up' ? 'text-red-600 font-bold' : 'text-gray-500'
+                        }`}>
+                          <div className="text-xs mb-1">📦</div>
+                          <div className="text-xs">Picked Up</div>
+                        </div>
+                        <div className={`flex-1 text-center ${
+                          shipment.tracking_stage === 'in_transit' ? 'text-red-600 font-bold' : 'text-gray-500'
+                        }`}>
+                          <div className="text-xs mb-1">🚚</div>
+                          <div className="text-xs">In Transit</div>
+                        </div>
+                        <div className={`flex-1 text-center ${
+                          shipment.tracking_stage === 'customs' ? 'text-red-600 font-bold' : 'text-gray-500'
+                        }`}>
+                          <div className="text-xs mb-1">🛃</div>
+                          <div className="text-xs">Customs</div>
+                        </div>
+                        <div className={`flex-1 text-center ${
+                          shipment.tracking_stage === 'out_for_delivery' ? 'text-red-600 font-bold' : 'text-gray-500'
+                        }`}>
+                          <div className="text-xs mb-1">🚛</div>
+                          <div className="text-xs">Out for Delivery</div>
+                        </div>
+                        <div className={`flex-1 text-center ${
+                          shipment.tracking_stage === 'delivered' ? 'text-red-600 font-bold' : 'text-gray-500'
+                        }`}>
+                          <div className="text-xs mb-1">✅</div>
+                          <div className="text-xs">Delivered</div>
+                        </div>
+                      </div>
+                      
+                      {/* Progress Bar Container */}
+                      <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                          className="absolute top-0 left-0 h-full bg-red-600 transition-all duration-500"
+                          style={{ width: `${shipment.tracking_progress || 0}%` }}
+                        ></div>
+                      </div>
+                      <div className="text-center mt-2 text-sm font-medium text-gray-700">
+                        {shipment.tracking_progress || 0}% Complete
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="bg-white p-6 border-b-2 border-gray-200">
                   <div className="tracking-info-detail">
                     <div className="tracking-box bg-gray-50 p-4 rounded-lg border border-gray-200">
                       <div className="tracking-time-box mb-3">
-                        <div className="tracking-time text-lg font-bold text-gray-800">October 07th, 2025</div>
-                        <span className="text-sm text-gray-600">11:30 AM</span>
+                        <div className="tracking-time text-lg font-bold text-gray-800">
+                          {shipment.status_date ? formatDate(shipment.status_date) : 'N/A'}
+                        </div>
+                        <span className="text-sm text-gray-600">{shipment.status_time || 'N/A'}</span>
                       </div>
                       <div className="tracking-location style-7 flex items-start gap-3">
-                        <span className="dott w-3 h-3 bg-red-500 rounded-full mt-1 flex-shrink-0"></span>
-                        <div>
-                          <strong className="text-red-600 font-bold block mb-1">On hold in hong kong</strong>
-                          <p className="text-sm text-gray-700">ASSURANCE 135000CFA PAYE TAXE IMPORT 150000 NON PAYE</p>
+                        <span className="dott w-3 h-3 bg-red-500 rounded-full mt-1 flex-shrink-0 animate-pulse"></span>
+                        <div className="flex-1">
+                          <strong className="text-red-600 font-bold block mb-2">{shipment.status}</strong>
+                          
+                          {/* Display Insurances */}
+                          {shipment.insurances && shipment.insurances.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-sm font-semibold text-gray-700 mb-1">Insurances:</p>
+                              {shipment.insurances.map((insurance, index) => (
+                                <div key={index} className="text-sm text-gray-700 ml-2 mb-1">
+                                  • {insurance.name}: {insurance.amount} 
+                                  <span className={`ml-2 px-2 py-0.5 rounded text-xs ${
+                                    insurance.paid ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                  }`}>
+                                    {insurance.paid ? 'PAID' : 'NOT PAID'}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {/* Display Import Tax */}
+                          {shipment.import_tax && (
+                            <div className="text-sm text-gray-700">
+                              <span className="font-semibold">Import Tax:</span> {shipment.import_tax}
+                              <span className={`ml-2 px-2 py-0.5 rounded text-xs ${
+                                shipment.import_tax_paid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              }`}>
+                                {shipment.import_tax_paid ? 'PAID' : 'NOT PAID'}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

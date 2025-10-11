@@ -11,10 +11,12 @@ import {
   Instagram,
   Linkedin
 } from 'lucide-react';
+import { useSiteSettings } from '../hooks/useSiteSettings';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { settings } = useSiteSettings();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -23,14 +25,14 @@ export default function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between py-2 border-b border-red-500">
           <div className="flex items-center gap-2 md:gap-6 text-xs md:text-sm overflow-hidden">
-            <a href="tel:+85252089745" className="flex items-center gap-1 md:gap-2 hover:text-red-200 transition whitespace-nowrap">
+            <a href={`tel:${settings.site_phone || '+85252089745'}`} className="flex items-center gap-1 md:gap-2 hover:text-red-200 transition whitespace-nowrap">
               <Phone size={14} className="md:w-4 md:h-4" />
-              <span className="hidden sm:inline">+85252089745</span>
+              <span className="hidden sm:inline">{settings.site_phone || '+85252089745'}</span>
               <span className="sm:hidden">Call</span>
             </a>
-            <a href="mailto:info@chinecargologistique.com" className="flex items-center gap-1 md:gap-2 hover:text-red-200 transition whitespace-nowrap">
+            <a href={`mailto:${settings.site_email || 'info@chinelogistique.com'}`} className="flex items-center gap-1 md:gap-2 hover:text-red-200 transition whitespace-nowrap">
               <Mail size={14} className="md:w-4 md:h-4" />
-              <span className="hidden lg:inline">info@chinecargologistique.com</span>
+              <span className="hidden lg:inline">{settings.site_email || 'info@chinelogistique.com'}</span>
               <span className="lg:hidden">Email</span>
             </a>
           </div>
@@ -46,8 +48,8 @@ export default function Header() {
           <Link to="/" className="flex items-center gap-2 md:gap-3 min-w-0 flex-shrink">
             <Ship size={32} className="text-white md:w-10 md:h-10 flex-shrink-0" />
             <div className="min-w-0">
-              <h1 className="text-lg md:text-2xl font-bold truncate">ChineLogistique</h1>
-              <p className="text-xs text-red-100 hidden sm:block">International Shipping Solutions</p>
+              <h1 className="text-lg md:text-2xl font-bold truncate">{settings.company_name || 'ChineLogistique'}</h1>
+              <p className="text-xs text-red-100 hidden sm:block">{settings.company_description || 'International Shipping Solutions'}</p>
             </div>
           </Link>
 

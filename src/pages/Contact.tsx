@@ -2,8 +2,11 @@ import { Mail, Phone, MapPin, Clock } from 'lucide-react';
 import SEO from '../components/SEO';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { useSiteSettings } from '../hooks/useSiteSettings';
 
 export default function Contact() {
+  const { settings } = useSiteSettings();
+
   return (
     <div className="min-h-screen bg-white">
       <SEO 
@@ -39,21 +42,21 @@ export default function Contact() {
                   <MapPin size={28} className="text-red-600 mt-1 flex-shrink-0" />
                   <div>
                     <div className="font-bold text-lg mb-1">Our Location</div>
-                    <div className="text-gray-600">China Guangzhou</div>
+                    <div className="text-gray-600">{settings.site_address}</div>
                   </div>
                 </div>
                 <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
                   <Phone size={28} className="text-red-600 mt-1 flex-shrink-0" />
                   <div>
                     <div className="font-bold text-lg mb-1">Phone Number</div>
-                    <div className="text-gray-600">+85252089745</div>
+                    <div className="text-gray-600">{settings.site_phone}</div>
                   </div>
                 </div>
                 <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
                   <Mail size={28} className="text-red-600 mt-1 flex-shrink-0" />
                   <div>
                     <div className="font-bold text-lg mb-1">Email Address</div>
-                    <div className="text-gray-600">info@chinecargologistique.com</div>
+                    <div className="text-gray-600">{settings.site_email}</div>
                   </div>
                 </div>
                 <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
