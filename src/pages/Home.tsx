@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, CloudRain, Clock, Plane, Ship, Truck, TrainFront, PackageCheck, Zap, MapPin, Search } from 'lucide-react';
 import SEO from '../components/SEO';
+import OrganizationSchema from '../components/OrganizationSchema';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import CounterAnimation from '../components/CounterAnimation';
@@ -22,11 +23,12 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       <SEO 
-        title="ChineLogistique - Transport et Logistique International depuis la Chine"
-        description="Solutions de transport professionnel depuis la Chine vers le monde entier. Fret maritime, aérien, routier et ferroviaire avec suivi en temps réel de vos expéditions."
-        keywords="transport chine, logistique internationale, fret maritime, fret aérien, transport routier, transport ferroviaire, expédition chine, cargo chine, livraison internationale, suivi colis"
-        canonical="https://chinelogistique.com/"
+        title="ChineLogistique - Transport et Logistique Internationale depuis la Chine"
+        description="Service de transport maritime, aérien, routier et ferroviaire depuis la Chine vers l'Afrique et le monde entier. Suivi en temps réel, tarifs compétitifs, livraison sécurisée."
+        keywords="transport chine afrique, logistique internationale, fret maritime chine, fret aérien chine, expédition marchandise chine, cargo chine cameroun, transport conteneur, douane chine"
+        canonical="https://chinelogistique.com"
       />
+      <OrganizationSchema />
       <Header />
 
       <section className="relative bg-gradient-to-r from-slate-900 to-slate-700 text-white min-h-screen flex items-center overflow-hidden">
