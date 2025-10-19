@@ -6,6 +6,8 @@ import Contact from './pages/Contact';
 import Track from './pages/Track';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
+import Blog from './pages/Blog';
+import Network from './pages/Network';
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
         <Route path="/services" element={<Services />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/track" element={<Track />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/network" element={<Network />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<Admin />} />
       </Routes>

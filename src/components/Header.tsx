@@ -60,7 +60,7 @@ export default function Header() {
             {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
 
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-6">
             <Link
               to="/"
               className={`hover:text-red-200 transition font-medium pb-1 border-b-2 ${
@@ -84,6 +84,22 @@ export default function Header() {
               }`}
             >
               Services
+            </Link>
+            <Link
+              to="/network"
+              className={`hover:text-red-200 transition font-medium pb-1 border-b-2 ${
+                isActive('/network') ? 'border-white' : 'border-transparent'
+              }`}
+            >
+              Réseau
+            </Link>
+            <Link
+              to="/blog"
+              className={`hover:text-red-200 transition font-medium pb-1 border-b-2 ${
+                isActive('/blog') ? 'border-white' : 'border-transparent'
+              }`}
+            >
+              Blog
             </Link>
             <Link
               to="/contact"
@@ -136,6 +152,24 @@ export default function Header() {
               onClick={() => setMobileMenuOpen(false)}
             >
               Services
+            </Link>
+            <Link
+              to="/network"
+              className={`hover:text-red-200 transition font-medium ${
+                isActive('/network') ? 'text-white font-bold' : ''
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Réseau Mondial
+            </Link>
+            <Link
+              to="/blog"
+              className={`hover:text-red-200 transition font-medium ${
+                isActive('/blog') ? 'text-white font-bold' : ''
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Blog
             </Link>
             <Link
               to="/contact"

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, LogOut, Package, Upload, X, Settings } from 'lucide-react';
+import { Plus, Edit, Trash2, LogOut, Package, Upload, X, Settings, MessageCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Toast from '../components/Toast';
 
@@ -92,6 +92,10 @@ export default function Admin() {
   });
   const [savingSettings, setSavingSettings] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [whatsappPhone, setWhatsappPhone] = useState('');
+  const [whatsappMessage, setWhatsappMessage] = useState('');
+  const [selectedTrackingNumber, setSelectedTrackingNumber] = useState('');
   const [formData, setFormData] = useState<ShipmentForm>({
     tracking_number: '',
     status: '',
@@ -456,6 +460,42 @@ export default function Admin() {
     }
   };
 
+  const handleOpenWhatsApp = (trackingNumber: string) => {
+    setSelectedTrackingNumber(trackingNumber);
+    setWhatsappPhone('');
+    setWhatsappMessage(`Bonjour, votre numéro de suivi est : ${trackingNumber}`);
+    setShowWhatsAppModal(true);
+  };
+
+  const handleSendWhatsApp = () => {
+    if (!whatsappPhone.trim()) {
+      setToast({ message: 'Veuillez entrer un numéro de téléphone', type: 'error' });
+      return;
+    }
+
+    if (whatsappPhone.length !== 9) {
+      setToast({ message: 'Le numéro doit contenir exactement 9 chiffres', type: 'error' });
+      return;
+    }
+
+    // Nettoyer le numéro de téléphone et ajouter le préfixe +237
+    const cleanPhone = whatsappPhone.replace(/[^0-9]/g, '');
+    const fullPhone = `237${cleanPhone}`;
+    
+    // Encoder le message pour l'URL
+    const encodedMessage = encodeURIComponent(whatsappMessage);
+    
+    // Ouvrir WhatsApp avec le message prérempli
+    const whatsappUrl = `https://wa.me/${fullPhone}?text=${encodedMessage}`;
+    window.open(whatsappUrl, '_blank');
+    
+    // Fermer le modal
+    setShowWhatsAppModal(false);
+    setWhatsappPhone('');
+    setWhatsappMessage('');
+    setSelectedTrackingNumber('');
+  };
+
   const resetForm = () => {
     setFormData({
       tracking_number: '',
@@ -624,6 +664,13 @@ export default function Admin() {
                         {shipment.receiver_name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => handleOpenWhatsApp(shipment.tracking_number)}
+                          className="text-green-600 hover:text-green-900 mr-4"
+                          title="Envoyer via WhatsApp"
+                        >
+                          <MessageCircle size={18} />
+                        </button>
                         <button
                           onClick={() => handleEdit(shipment.id)}
                           className="text-blue-600 hover:text-blue-900 mr-4"
@@ -1458,6 +1505,103 @@ export default function Admin() {
                   className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
                 >
                   Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* WhatsApp Modal */}
+      {showWhatsAppModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">Envoyer via WhatsApp</h3>
+              <button
+                onClick={() => {
+                  setShowWhatsAppModal(false);
+                  setWhatsappPhone('');
+                  setWhatsappMessage('');
+                  setSelectedTrackingNumber('');
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Numéro de téléphone WhatsApp *
+                </label>
+                <div className="flex items-center">
+                  <span className="inline-flex items-center px-4 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-700 font-medium">
+                    +237
+                  </span>
+                  <input
+                    type="tel"
+                    value={whatsappPhone}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      setWhatsappPhone(value);
+                    }}
+                    placeholder="6XX XX XX XX"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                    autoFocus
+                    maxLength={9}
+                  />
+                </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  Entrez uniquement les 9 chiffres du numéro (sans l'indicatif)
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Message
+                </label>
+                <textarea
+                  value={whatsappMessage}
+                  onChange={(e) => setWhatsappMessage(e.target.value)}
+                  rows={6}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 resize-none"
+                  placeholder="Votre message ici..."
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Vous pouvez modifier le message avant de l'envoyer
+                </p>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <MessageCircle className="text-green-600 mr-3 mt-0.5" size={20} />
+                  <div>
+                    <p className="text-sm font-medium text-green-900">Numéro de suivi</p>
+                    <p className="text-sm text-green-700 mt-1">{selectedTrackingNumber}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowWhatsAppModal(false);
+                    setWhatsappPhone('');
+                    setWhatsappMessage('');
+                    setSelectedTrackingNumber('');
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition font-medium"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleSendWhatsApp}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium flex items-center justify-center gap-2"
+                >
+                  <MessageCircle size={18} />
+                  Envoyer
                 </button>
               </div>
             </div>

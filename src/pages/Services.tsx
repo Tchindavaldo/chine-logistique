@@ -7,11 +7,38 @@ export default function Services() {
     <div className="min-h-screen bg-white">
       <Header />
 
-      <section className="bg-red-600 text-white py-16">
-        <div className="container mx-auto px-4">
-          <h1 className="text-5xl font-bold mb-4">Our Services</h1>
-          <p className="text-xl text-red-100">Home / Services</p>
+      <section className="relative bg-red-600 text-white py-24 overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: 'url(https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?q=80&w=2065)',
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/40 to-black/30"></div>
         </div>
+        
+        {/* Content */}
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl">
+            <div className="inline-block bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
+              <p className="text-sm font-medium">🚚 Solutions Complètes</p>
+            </div>
+            <h1 className="text-6xl font-bold mb-4 leading-tight">
+              Our Services
+            </h1>
+            <p className="text-2xl text-red-50 mb-6">Des solutions logistiques adaptées à tous vos besoins</p>
+            <div className="flex items-center gap-2 text-red-100">
+              <span className="font-medium">Home</span>
+              <span>/</span>
+              <span className="text-white font-semibold">Services</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Decorative Elements */}
+        <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 -left-10 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
       </section>
 
       <section className="py-20 bg-white">

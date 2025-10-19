@@ -250,6 +250,417 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Why Choose Us Section */}
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center mb-16">
+            <div className="inline-block bg-red-100 text-red-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+              POURQUOI NOUS CHOISIR
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+              Votre Partenaire de Confiance pour la Logistique Internationale
+            </h2>
+            <p className="text-xl text-gray-600">
+              Des années d'expérience et des milliers de clients satisfaits à travers le monde
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Sécurité Garantie */}
+            <div className="group relative">
+              <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 h-80">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                  style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1563013544-824ae1b704d3?q=80&w=800)',
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/60 to-black/40"></div>
+                </div>
+                <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4">
+                    <Shield size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-white">Sécurité Garantie</h3>
+                  <p className="text-gray-200 leading-relaxed text-sm">
+                    Vos marchandises sont protégées par une assurance complète. Nous prenons en charge tous les risques pour votre tranquillité d'esprit.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Livraison Rapide */}
+            <div className="group relative">
+              <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 h-80">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                  style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?q=80&w=800)',
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/60 to-black/40"></div>
+                </div>
+                <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4">
+                    <Clock size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-white">Livraison Rapide</h3>
+                  <p className="text-gray-200 leading-relaxed text-sm">
+                    Délais respectés à 100%. Notre réseau optimisé garantit des livraisons express dans les meilleurs délais.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Suivi en Temps Réel */}
+            <div className="group relative">
+              <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 h-80">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                  style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800)',
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/60 to-black/40"></div>
+                </div>
+                <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4">
+                    <MapPin size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-white">Suivi en Temps Réel</h3>
+                  <p className="text-gray-200 leading-relaxed text-sm">
+                    Suivez votre colis 24h/24 et 7j/7 grâce à notre système de tracking avancé. Soyez toujours informé de la position de vos marchandises.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Tarifs Compétitifs */}
+            <div className="group relative">
+              <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 h-80">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                  style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1554224311-beee315c201b?q=80&w=800)',
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/60 to-black/40"></div>
+                </div>
+                <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-white">Tarifs Compétitifs</h3>
+                  <p className="text-gray-200 leading-relaxed text-sm">
+                    Les meilleurs prix du marché sans compromettre la qualité. Devis gratuits et transparents sans frais cachés.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Équipe Professionnelle */}
+            <div className="group relative">
+              <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 h-80">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                  style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=800)',
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/60 to-black/40"></div>
+                </div>
+                <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-white">Équipe Professionnelle</h3>
+                  <p className="text-gray-200 leading-relaxed text-sm">
+                    Plus de 2500 experts dévoués à votre service. Formation continue et expertise reconnue dans le secteur.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Support 24/7 */}
+            <div className="group relative">
+              <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 h-80">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                  style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1553877522-43269d4ea984?q=80&w=800)',
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/60 to-black/40"></div>
+                </div>
+                <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-white">Support 24/7</h3>
+                  <p className="text-gray-200 leading-relaxed text-sm">
+                    Notre équipe est disponible jour et nuit pour répondre à toutes vos questions. Assistance multilingue et réactive.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center mb-16">
+            <div className="inline-block bg-red-100 text-red-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+              COMMENT ÇA MARCHE
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+              Un Processus Simple et Efficace
+            </h2>
+            <p className="text-xl text-gray-600">
+              Expédiez vos marchandises en 4 étapes simples
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+            {/* Step 1 */}
+            <div className="relative group">
+              <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 h-full">
+                {/* Image de fond */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                  style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=800)',
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30"></div>
+                </div>
+                
+                {/* Contenu */}
+                <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
+                  <div className="absolute -top-4 -left-4 w-12 h-12 bg-red-600 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
+                    1
+                  </div>
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-6 mx-auto">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold mb-3 text-white text-center">Demande de Devis</h3>
+                  <p className="text-gray-200 text-center leading-relaxed text-sm">
+                    Remplissez notre formulaire en ligne avec les détails de votre expédition
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="relative group">
+              <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 h-full">
+                {/* Image de fond */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                  style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?q=80&w=800)',
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30"></div>
+                </div>
+                
+                {/* Contenu */}
+                <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
+                  <div className="absolute -top-4 -left-4 w-12 h-12 bg-red-600 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
+                    2
+                  </div>
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-6 mx-auto">
+                    <PackageCheck size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3 text-white text-center">Enlèvement</h3>
+                  <p className="text-gray-200 text-center leading-relaxed text-sm">
+                    Nous récupérons votre marchandise directement chez votre fournisseur en Chine
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="relative group">
+              <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 h-full">
+                {/* Image de fond */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                  style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1578575437130-527eed3abbec?q=80&w=800)',
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30"></div>
+                </div>
+                
+                {/* Contenu */}
+                <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
+                  <div className="absolute -top-4 -left-4 w-12 h-12 bg-red-600 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
+                    3
+                  </div>
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-6 mx-auto">
+                    <Ship size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3 text-white text-center">Expédition</h3>
+                  <p className="text-gray-200 text-center leading-relaxed text-sm">
+                    Votre colis est expédié via le mode de transport le plus adapté
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="relative group">
+              <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 h-full">
+                {/* Image de fond */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                  style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?q=80&w=800)',
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30"></div>
+                </div>
+                
+                {/* Contenu */}
+                <div className="relative z-10 p-8 h-full flex flex-col justify-end text-white">
+                  <div className="absolute -top-4 -left-4 w-12 h-12 bg-red-600 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
+                    4
+                  </div>
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-6 mx-auto">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold mb-3 text-white text-center">Livraison</h3>
+                  <p className="text-gray-200 text-center leading-relaxed text-sm">
+                    Réception de votre colis à l'adresse indiquée, en parfait état
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition shadow-lg">
+              Démarrer Mon Expédition
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center mb-16">
+            <div className="inline-block bg-red-100 text-red-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+              FAQ
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+              Questions Fréquemment Posées
+            </h2>
+            <p className="text-xl text-gray-600">
+              Retrouvez les réponses aux questions les plus courantes
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto space-y-4">
+            <details className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 group">
+              <summary className="px-6 py-5 cursor-pointer list-none flex items-center justify-between font-semibold text-lg text-gray-900">
+                <span>Quels sont vos délais de livraison depuis la Chine ?</span>
+                <span className="text-red-600 group-open:rotate-180 transition-transform duration-300">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </summary>
+              <div className="px-6 pb-5 text-gray-600 leading-relaxed">
+                Nos délais varient selon le mode de transport choisi : 3-5 jours pour le fret aérien express, 7-15 jours pour le fret aérien standard, 25-35 jours pour le fret maritime, et 15-25 jours pour le fret ferroviaire. Nous garantissons des délais précis et un suivi en temps réel.
+              </div>
+            </details>
+
+            <details className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 group">
+              <summary className="px-6 py-5 cursor-pointer list-none flex items-center justify-between font-semibold text-lg text-gray-900">
+                <span>Comment calculez-vous les frais de transport ?</span>
+                <span className="text-red-600 group-open:rotate-180 transition-transform duration-300">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </summary>
+              <div className="px-6 pb-5 text-gray-600 leading-relaxed">
+                Les frais sont calculés en fonction du poids, du volume, de la destination et du mode de transport. Nous offrons des devis gratuits et transparents sans frais cachés. Contactez-nous pour obtenir un devis personnalisé pour votre expédition.
+              </div>
+            </details>
+
+            <details className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 group">
+              <summary className="px-6 py-5 cursor-pointer list-none flex items-center justify-between font-semibold text-lg text-gray-900">
+                <span>Proposez-vous une assurance pour les marchandises ?</span>
+                <span className="text-red-600 group-open:rotate-180 transition-transform duration-300">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </summary>
+              <div className="px-6 pb-5 text-gray-600 leading-relaxed">
+                Oui, nous proposons une assurance complète pour toutes vos expéditions. Cette assurance couvre les dommages, les pertes et les retards. Vous pouvez avoir l'esprit tranquille sachant que vos marchandises sont protégées tout au long du trajet.
+              </div>
+            </details>
+
+            <details className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 group">
+              <summary className="px-6 py-5 cursor-pointer list-none flex items-center justify-between font-semibold text-lg text-gray-900">
+                <span>Puis-je suivre mon colis en temps réel ?</span>
+                <span className="text-red-600 group-open:rotate-180 transition-transform duration-300">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </summary>
+              <div className="px-6 pb-5 text-gray-600 leading-relaxed">
+                Absolument ! Notre système de suivi avancé vous permet de localiser votre colis 24h/24 et 7j/7. Vous recevrez un numéro de suivi unique que vous pourrez utiliser sur notre plateforme pour connaître l'état et la position exacte de votre expédition.
+              </div>
+            </details>
+
+            <details className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 group">
+              <summary className="px-6 py-5 cursor-pointer list-none flex items-center justify-between font-semibold text-lg text-gray-900">
+                <span>Gérez-vous les formalités douanières ?</span>
+                <span className="text-red-600 group-open:rotate-180 transition-transform duration-300">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </summary>
+              <div className="px-6 pb-5 text-gray-600 leading-relaxed">
+                Oui, nous gérons toutes les formalités douanières pour vous. Notre équipe d'experts s'occupe de tous les documents nécessaires et facilite le dédouanement de vos marchandises, vous évitant ainsi les complications administratives.
+              </div>
+            </details>
+
+            <details className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 group">
+              <summary className="px-6 py-5 cursor-pointer list-none flex items-center justify-between font-semibold text-lg text-gray-900">
+                <span>Quels types de marchandises pouvez-vous transporter ?</span>
+                <span className="text-red-600 group-open:rotate-180 transition-transform duration-300">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </summary>
+              <div className="px-6 pb-5 text-gray-600 leading-relaxed">
+                Nous transportons une large gamme de marchandises : produits électroniques, textiles, pièces automobiles, matériaux de construction, mobilier, et bien plus. Pour les marchandises spéciales (dangereuses, périssables, surdimensionnées), contactez-nous pour des solutions sur mesure.
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
       <section className="relative py-20 bg-gray-900 overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center"
