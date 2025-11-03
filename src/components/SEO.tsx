@@ -14,7 +14,7 @@ export default function SEO({
   description = "ChineLogistique, votre partenaire de confiance pour le transport maritime, aérien, routier et ferroviaire depuis la Chine. Solutions logistiques professionnelles avec suivi en temps réel.",
   keywords = "transport chine, logistique internationale, fret maritime, fret aérien, transport routier, transport ferroviaire, expédition chine, cargo chine, livraison internationale, suivi colis",
   canonical,
-  ogImage = "https://chinelogistique.com/og-image.jpg",
+  ogImage = "https://chinelogistique.com/logo512x512.png",
   noindex = false
 }: SEOProps) {
   useEffect(() => {

@@ -19,8 +19,13 @@ export default function OrganizationSchema() {
       "name": "ChineLogistique",
       "alternateName": "Chine Logistique",
       "url": "https://chinelogistique.com",
-      "logo": "https://chinelogistique.com/logo.svg",
-      "image": "https://chinelogistique.com/logo.svg",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://chinelogistique.com/logo512x512.png",
+        "width": 512,
+        "height": 512
+      },
+      "image": "https://chinelogistique.com/logo512x512.png",
       "description": "ChineLogistique est votre partenaire de confiance pour le transport et la logistique internationale depuis la Chine. Solutions de fret maritime, aérien, routier et ferroviaire avec suivi en temps réel.",
       "email": "info@chinelogistique.com",
       "telephone": "+85252089745",
