@@ -6,8 +6,6 @@ Sitemap: https://chinelogistique.com/sitemap.xml
 
 # Explicitly allow favicon and icon files
 Allow: /favicon.ico
-Allow: /icon.svg
-Allow: /logo.svg
 Allow: /logo*.png
 Allow: /site.webmanifest
 

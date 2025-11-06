@@ -48,14 +48,7 @@
       "source": "/logo512x512.png",
       "destination": "/logo512x512.png"
     },
-    {
-      "source": "/logo.svg",
-      "destination": "/logo.svg"
-    },
-    {
-      "source": "/icon.svg",
-      "destination": "/icon.svg"
-    },
+
     {
       "source": "/site.webmanifest",
       "destination": "/site.webmanifest"
@@ -126,32 +119,7 @@
         }
       ]
     },
-    {
-      "source": "/icon.svg",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "image/svg+xml"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/logo.svg",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "image/svg+xml"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
+
     {
       "source": "/logo:size.png",
       "headers": [

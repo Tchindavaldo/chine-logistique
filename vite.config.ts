@@ -19,7 +19,7 @@ export default defineConfig({
           if (assetInfo.name?.includes('favicon') || 
               assetInfo.name?.includes('apple-touch-icon') ||
               assetInfo.name?.includes('android-chrome') ||
-              assetInfo.name === 'icon.svg' ||
+              assetInfo.name?.includes('logo') ||
               assetInfo.name === 'site.webmanifest') {
             return '[name][extname]';
           }
