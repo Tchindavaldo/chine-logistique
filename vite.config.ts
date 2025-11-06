@@ -20,6 +20,7 @@ export default defineConfig({
               assetInfo.name?.includes('apple-touch-icon') ||
               assetInfo.name?.includes('android-chrome') ||
               assetInfo.name?.includes('logo') ||
+              assetInfo.name === 'icon.svg' ||
               assetInfo.name === 'site.webmanifest') {
             return '[name][extname]';
           }
