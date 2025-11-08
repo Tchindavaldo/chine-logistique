@@ -3,75 +3,40 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/favicon.ico",
-      "destination": "/favicon.ico"
+      "src": "/sitemap.xml",
+      "dest": "/sitemap.xml",
+      "headers": {
+        "Content-Type": "application/xml"
+      }
     },
     {
-      "source": "/favicon-16x16.png",
-      "destination": "/favicon-16x16.png"
+      "src": "/robots.txt",
+      "dest": "/robots.txt",
+      "headers": {
+        "Content-Type": "text/plain"
+      }
     },
     {
-      "source": "/favicon-32x32.png",
-      "destination": "/favicon-32x32.png"
+      "src": "/favicon.ico",
+      "dest": "/favicon.ico"
     },
     {
-      "source": "/apple-touch-icon.png",
-      "destination": "/apple-touch-icon.png"
+      "src": "/icon.svg",
+      "dest": "/icon.svg"
     },
     {
-      "source": "/android-chrome-192x192.png",
-      "destination": "/android-chrome-192x192.png"
+      "src": "/site.webmanifest",
+      "dest": "/site.webmanifest"
     },
     {
-      "source": "/android-chrome-512x512.png",
-      "destination": "/android-chrome-512x512.png"
+      "src": "/(logo.*\\.png|.*\\.png)",
+      "dest": "/$1"
     },
     {
-      "source": "/logo32x32.png",
-      "destination": "/logo32x32.png"
-    },
-    {
-      "source": "/logo48x48.png",
-      "destination": "/logo48x48.png"
-    },
-    {
-      "source": "/logo64x64.png",
-      "destination": "/logo64x64.png"
-    },
-    {
-      "source": "/logo96x96.png",
-      "destination": "/logo96x96.png"
-    },
-    {
-      "source": "/icon.svg",
-      "destination": "/icon.svg"
-    },
-    {
-      "source": "/logo192x192.png",
-      "destination": "/logo192x192.png"
-    },
-    {
-      "source": "/logo512x512.png",
-      "destination": "/logo512x512.png"
-    },
-
-    {
-      "source": "/site.webmanifest",
-      "destination": "/site.webmanifest"
-    },
-    {
-      "source": "/sitemap.xml",
-      "destination": "/sitemap.xml"
-    },
-    {
-      "source": "/robots.txt",
-      "destination": "/robots.txt"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "headers": [
