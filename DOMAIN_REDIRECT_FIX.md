@@ -24,7 +24,7 @@ https://www.chinelogistique.com → 200 OK (fonctionne)
 
 - ✅ Plus court et moderne : `chinelogistique.com`
 - ✅ Plus facile à mémorise
-- ✅ Tendance actuelle du web
+- ✅ Tendance actuelle du
 
 ---
 
