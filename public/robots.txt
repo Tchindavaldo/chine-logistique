@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://chinelogistique.com/sitemap.xml
+Sitemap: https://www.chinelogistique.com/sitemap.xml
 
 # Explicitly allow favicon and icon files
 Allow: /favicon.ico
