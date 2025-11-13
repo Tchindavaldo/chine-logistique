@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Admin from './pages/Admin';
 import Blog from './pages/Blog';
 import Network from './pages/Network';
+import TermsAndConditions from './pages/TermsAndConditions';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/network" element={<Network />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
       </Routes>
     </Router>
   );
