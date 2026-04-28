@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, LogOut, Package, Upload, X, Settings, MessageCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, LogOut, Package, Upload, X, Settings, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Toast from '../components/Toast';
 
@@ -68,6 +68,7 @@ interface ShipmentForm {
   status_time: string;
   tracking_progress: number;
   tracking_stage: string;
+  total_duration_days: number;
 }
 
 export default function Admin() {
@@ -82,6 +83,8 @@ export default function Admin() {
   const [newTrackingNumber, setNewTrackingNumber] = useState('');
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState<'shipments' | 'settings'>('shipments');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>({
     site_email: '',
     site_phone: '',
@@ -132,8 +135,60 @@ export default function Admin() {
     status_time: '',
     tracking_progress: 0,
     tracking_stage: 'picked_up',
+    total_duration_days: 0,
   });
   const navigate = useNavigate();
+
+  const computeStageFromProgress = (progressPct: number): string => {
+    if (progressPct >= 100) return 'delivered';
+    if (progressPct >= 85) return 'out_for_delivery';
+    if (progressPct >= 70) return 'customs';
+    if (progressPct >= 15) return 'in_transit';
+    return 'picked_up';
+  };
+
+  const addDaysISO = (isoDate: string, days: number): string => {
+    if (!isoDate || !days) return '';
+    const d = new Date(isoDate);
+    if (isNaN(d.getTime())) return '';
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0, 10);
+  };
+
+  const isValidISODate = (s: string): boolean => {
+    if (!s) return false;
+    const d = new Date(s);
+    return !isNaN(d.getTime());
+  };
+
+  useEffect(() => {
+    if (formData.total_duration_days > 0 && formData.departure_date) {
+      const expected = addDaysISO(formData.departure_date, formData.total_duration_days);
+      const startUTC = Date.UTC(
+        new Date(formData.departure_date).getFullYear(),
+        new Date(formData.departure_date).getMonth(),
+        new Date(formData.departure_date).getDate()
+      );
+      const today = new Date();
+      const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+      const diffDays = Math.floor((todayUTC - startUTC) / 86400000);
+      const elapsed = Math.max(0, Math.min(formData.total_duration_days, diffDays));
+      const autoProgress = Math.round((elapsed / formData.total_duration_days) * 100);
+      const autoStage = computeStageFromProgress(autoProgress);
+      if (
+        formData.expected_delivery_date !== expected ||
+        formData.tracking_progress !== autoProgress ||
+        formData.tracking_stage !== autoStage
+      ) {
+        setFormData((prev) => ({
+          ...prev,
+          expected_delivery_date: expected,
+          tracking_progress: autoProgress,
+          tracking_stage: autoStage,
+        }));
+      }
+    }
+  }, [formData.departure_date, formData.total_duration_days, formData.expected_delivery_date, formData.tracking_progress, formData.tracking_stage]);
 
   useEffect(() => {
     const initializeAdmin = async () => {
@@ -333,6 +388,18 @@ export default function Admin() {
       errors.quantity = 'Quantity must be positive';
     }
 
+    // Si une durée totale est définie, la date de départ doit être valide
+    if (formData.total_duration_days > 0) {
+      if (!formData.departure_date) {
+        errors.departure_date = 'Departure date is required when total duration is set';
+      } else if (!isValidISODate(formData.departure_date)) {
+        errors.departure_date = 'Invalid departure date format';
+      }
+      if (formData.total_duration_days < 1) {
+        errors.total_duration_days = 'Total duration must be at least 1 day';
+      }
+    }
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -434,6 +501,7 @@ export default function Admin() {
         status_time: data.status_time || '',
         tracking_progress: data.tracking_progress || 0,
         tracking_stage: data.tracking_stage || 'picked_up',
+        total_duration_days: data.total_duration_days || 0,
       });
       setImagePreview(data.image_url || null);
       setEditingId(id);
@@ -533,6 +601,7 @@ export default function Admin() {
       status_time: '',
       tracking_progress: 0,
       tracking_stage: 'picked_up',
+      total_duration_days: 0,
     });
     setImagePreview(null);
     setFormErrors({});
@@ -643,7 +712,9 @@ export default function Admin() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {shipments.map((shipment) => (
+                  {shipments
+                    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                    .map((shipment) => (
                     <tr key={shipment.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {shipment.tracking_number}
@@ -689,6 +760,78 @@ export default function Admin() {
                 </tbody>
               </table>
             </div>
+
+            {shipments.length > 0 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div className="flex items-center gap-3 text-sm text-gray-700">
+                  <label htmlFor="itemsPerPage">Items par page:</label>
+                  <select
+                    id="itemsPerPage"
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(parseInt(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="px-2 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                  <span className="text-gray-500">
+                    {(() => {
+                      const start = (currentPage - 1) * itemsPerPage + 1;
+                      const end = Math.min(currentPage * itemsPerPage, shipments.length);
+                      return `${start}-${end} sur ${shipments.length}`;
+                    })()}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="p-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  {(() => {
+                    const totalPages = Math.max(1, Math.ceil(shipments.length / itemsPerPage));
+                    const pages: number[] = [];
+                    const maxVisible = 5;
+                    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+                    const end = Math.min(totalPages, start + maxVisible - 1);
+                    start = Math.max(1, end - maxVisible + 1);
+                    for (let i = start; i <= end; i++) pages.push(i);
+                    return pages.map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setCurrentPage(p)}
+                        className={`min-w-[36px] px-3 py-1 rounded-lg border ${
+                          p === currentPage
+                            ? 'bg-red-600 text-white border-red-600'
+                            : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ));
+                  })()}
+                  <button
+                    onClick={() => {
+                      const totalPages = Math.max(1, Math.ceil(shipments.length / itemsPerPage));
+                      setCurrentPage((p) => Math.min(totalPages, p + 1));
+                    }}
+                    disabled={currentPage >= Math.ceil(shipments.length / itemsPerPage)}
+                    className="p-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -899,20 +1042,33 @@ export default function Admin() {
                     type="date"
                     value={formData.expected_delivery_date}
                     onChange={(e) => setFormData({ ...formData, expected_delivery_date: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
+                    disabled={formData.total_duration_days > 0}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
+                  {formData.total_duration_days > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Calculée automatiquement (Date de départ + durée totale).
+                    </p>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Departure Date
+                    Departure Date {formData.total_duration_days > 0 && <span className="text-red-500">*</span>}
                   </label>
                   <input
                     type="date"
                     value={formData.departure_date}
                     onChange={(e) => setFormData({ ...formData, departure_date: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                      formErrors.departure_date
+                        ? 'border-red-500 focus:ring-red-600'
+                        : 'border-gray-300 focus:ring-red-600'
+                    }`}
                   />
+                  {formErrors.departure_date && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.departure_date}</p>
+                  )}
                 </div>
 
                 <div>
@@ -1142,7 +1298,8 @@ export default function Admin() {
                     <select
                       value={formData.tracking_stage}
                       onChange={(e) => setFormData({ ...formData, tracking_stage: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
+                      disabled={formData.total_duration_days > 0}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                     >
                       <option value="picked_up">Picked Up</option>
                       <option value="in_transit">In Transit</option>
@@ -1150,6 +1307,11 @@ export default function Admin() {
                       <option value="out_for_delivery">Out for Delivery</option>
                       <option value="delivered">Delivered</option>
                     </select>
+                    {formData.total_duration_days > 0 && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Calculé automatiquement selon la progression journalière.
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -1162,8 +1324,48 @@ export default function Admin() {
                       max="100"
                       value={formData.tracking_progress}
                       onChange={(e) => setFormData({ ...formData, tracking_progress: parseInt(e.target.value) || 0 })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
+                      disabled={formData.total_duration_days > 0}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {formData.total_duration_days > 0
+                        ? 'Calculée automatiquement selon la durée totale et la date de départ.'
+                        : 'Optionnel : laissez à 0 pour utiliser la progression automatique basée sur la durée totale.'}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Durée totale du colis (en jours)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.total_duration_days}
+                      onChange={(e) => setFormData({ ...formData, total_duration_days: parseInt(e.target.value) || 0 })}
+                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                        formErrors.total_duration_days
+                          ? 'border-red-500 focus:ring-red-600'
+                          : 'border-gray-300 focus:ring-red-600'
+                      }`}
+                      placeholder="Ex: 30"
+                    />
+                    {formErrors.total_duration_days && (
+                      <p className="text-red-500 text-sm mt-1">{formErrors.total_duration_days}</p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">
+                      La progression sera calculée automatiquement chaque jour à partir de la date de départ.
+                    </p>
+                    {formData.total_duration_days > 0 && !isValidISODate(formData.departure_date) && (
+                      <div className="mt-2 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                        <p className="text-sm text-yellow-800 font-medium">
+                          ⚠️ Date de départ requise
+                        </p>
+                        <p className="text-xs text-yellow-700 mt-1">
+                          Pour activer la progression automatique, veuillez d'abord renseigner une <strong>Date de départ</strong> valide ci-dessus.
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Insurances */}
