@@ -90,7 +90,10 @@ function ProgressSection({ shipment }: { shipment: Shipment }) {
   return (
     <div className="bg-white p-6 border-b-2 border-gray-200">
       <style>{`
-        @keyframes blink-day { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.2); } }
+        @keyframes blink-day {
+          0%, 100% { opacity: 1; transform: scale(1.4); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+          50% { opacity: 0.6; transform: scale(1.7); box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+        }
         .blink-day { animation: blink-day 1s ease-in-out infinite; }
       `}</style>
       <h3 className="text-xl font-bold mb-6 text-center">Package Tracking Progress</h3>
@@ -131,12 +134,12 @@ function ProgressSection({ shipment }: { shipment: Shipment }) {
                 const dotColor = isPast
                   ? 'bg-red-600 border-red-600'
                   : isCurrent
-                  ? 'bg-yellow-400 border-yellow-500 blink-day'
+                  ? 'bg-red-600 border-red-700 blink-day'
                   : 'bg-white border-gray-400';
                 const labelColor = isPast
                   ? 'text-red-600 font-semibold'
                   : isCurrent
-                  ? 'text-yellow-600 font-bold'
+                  ? 'text-red-600 font-bold'
                   : 'text-gray-500';
                 return (
                   <div
