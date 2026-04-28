@@ -85,6 +85,8 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState<'shipments' | 'settings'>('shipments');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [deleteTarget, setDeleteTarget] = useState<Shipment | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>({
     site_email: '',
     site_phone: '',
@@ -511,20 +513,24 @@ export default function Admin() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this shipment?')) return;
-
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
       const { error } = await supabase
         .from('shipments')
         .delete()
-        .eq('id', id);
+        .eq('id', deleteTarget.id);
 
       if (error) throw error;
+      setToast({ message: 'Shipment deleted successfully!', type: 'success' });
+      setDeleteTarget(null);
       fetchShipments();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setToast({ message: 'Error deleting shipment: ' + errorMessage, type: 'error' });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -688,7 +694,7 @@ export default function Admin() {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="sticky left-0 z-10 bg-gray-50 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
                       Tracking Number
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -715,8 +721,8 @@ export default function Admin() {
                   {shipments
                     .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                     .map((shipment) => (
-                    <tr key={shipment.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <tr key={shipment.id} className="group hover:bg-gray-50">
+                      <td className="sticky left-0 z-10 bg-white group-hover:bg-gray-50 px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
                         {shipment.tracking_number}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -749,7 +755,7 @@ export default function Admin() {
                           <Edit size={18} />
                         </button>
                         <button
-                          onClick={() => handleDelete(shipment.id)}
+                          onClick={() => setDeleteTarget(shipment)}
                           className="text-red-600 hover:text-red-900"
                         >
                           <Trash2 size={18} />
@@ -1804,6 +1810,57 @@ export default function Admin() {
                 >
                   <MessageCircle size={18} />
                   Envoyer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-8">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                <Trash2 className="h-8 w-8 text-red-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Supprimer ce colis ?</h3>
+              <p className="text-gray-600 mb-2">
+                Cette action est <strong>irréversible</strong>.
+              </p>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-6">
+                <p className="text-xs text-gray-500 mb-1">Numéro de suivi</p>
+                <p className="text-base font-bold text-red-600">{deleteTarget.tracking_number}</p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={deleting}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  disabled={deleting}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {deleting ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Suppression...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 size={18} />
+                      Supprimer
+                    </>
+                  )}
                 </button>
               </div>
             </div>
