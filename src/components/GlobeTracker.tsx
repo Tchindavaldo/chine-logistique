@@ -240,12 +240,12 @@ export default function GlobeTracker({
         {to.name} {destinationCity ? `(${destinationCity})` : ''} ·
         {isAir ? ' ✈️ Voie aérienne' : ' 🚢 Voie maritime'}
       </p>
-      <div className="flex justify-center bg-black rounded-lg overflow-hidden">
+      <div className="flex justify-center bg-slate-100 rounded-lg overflow-hidden">
         <Globe
           ref={globeRef}
           width={760}
           height={520}
-          backgroundColor="rgba(0,0,0,1)"
+          backgroundColor="rgba(241,245,249,1)"
           globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
           bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
           atmosphereColor="#3b82f6"
