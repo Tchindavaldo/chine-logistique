@@ -287,13 +287,11 @@ export default function GlobeTracker({
             {
               lat: vehiclePos[0],
               lng: vehiclePos[1],
-              type: isAir ? 'origin' : 'boat',
+              type: isAir ? 'plane-dot' : 'boat',
               size: isAir ? 18 : 32,
               rotate: bearing,
             },
-            ...(isAir
-              ? []
-              : [{ lat: from.lat, lng: from.lng, type: 'origin', size: 18, rotate: 0 }]),
+            { lat: from.lat, lng: from.lng, type: 'origin', size: 18, rotate: 0 },
             { lat: to.lat, lng: to.lng, type: 'dest', size: 18, rotate: 0 },
           ]}
           htmlLat="lat"
@@ -313,6 +311,10 @@ export default function GlobeTracker({
                   </g>
                 </svg>`;
               el.style.filter = 'drop-shadow(0 0 4px rgba(255,255,255,0.9))';
+            } else if (d.type === 'plane-dot') {
+              el.innerHTML = '🔵';
+              el.style.fontSize = `${d.size}px`;
+              el.style.filter = 'drop-shadow(0 0 6px rgba(59,130,246,0.9))';
             } else if (d.type === 'boat') {
               el.innerHTML = '🚢';
               el.style.fontSize = `${d.size}px`;

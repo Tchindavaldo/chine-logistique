@@ -409,6 +409,15 @@ export default function Admin() {
       if (formData.total_duration_days < 1) {
         errors.total_duration_days = 'Total duration must be at least 1 day';
       }
+      // Validation selon le mode de transport
+      if (formData.transport_mode === 'air' && formData.total_duration_days > 7) {
+        errors.total_duration_days =
+          '✈️ Mode aérien : la durée ne peut pas dépasser 7 jours (l\'avion est rapide)';
+      }
+      if (formData.transport_mode === 'sea' && formData.total_duration_days < 30) {
+        errors.total_duration_days =
+          '🚢 Mode maritime : la durée doit être d\'au moins 30 jours (le bateau est lent)';
+      }
     }
 
     setFormErrors(errors);
@@ -1425,7 +1434,8 @@ export default function Admin() {
                     </label>
                     <input
                       type="number"
-                      min="0"
+                      min={formData.transport_mode === 'sea' ? 30 : 0}
+                      max={formData.transport_mode === 'air' ? 7 : undefined}
                       value={formData.total_duration_days}
                       onChange={(e) => setFormData({ ...formData, total_duration_days: parseInt(e.target.value) || 0 })}
                       className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
@@ -1433,13 +1443,16 @@ export default function Admin() {
                           ? 'border-red-500 focus:ring-red-600'
                           : 'border-gray-300 focus:ring-red-600'
                       }`}
-                      placeholder="Ex: 30"
+                      placeholder={formData.transport_mode === 'air' ? 'Max 7 jours' : 'Min 30 jours'}
                     />
                     {formErrors.total_duration_days && (
                       <p className="text-red-500 text-sm mt-1">{formErrors.total_duration_days}</p>
                     )}
                     <p className="text-xs text-gray-500 mt-1">
-                      La progression sera calculée automatiquement chaque jour à partir de la date de départ.
+                      {formData.transport_mode === 'air'
+                        ? '✈️ Mode aérien : durée maximale 7 jours.'
+                        : '🚢 Mode maritime : durée minimale 30 jours.'}
+                      {' '}La progression sera calculée automatiquement chaque jour à partir de la date de départ.
                     </p>
                     {formData.total_duration_days > 0 && !isValidISODate(formData.departure_date) && (
                       <div className="mt-2 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
