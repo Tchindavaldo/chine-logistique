@@ -271,7 +271,7 @@ export default function GlobeTracker({
           pathDashLength={0.005}
           pathDashGap={0.005}
           pathDashAnimateTime={0}
-          pathPointAlt={isAir ? 0.15 : 0.005}
+          pathPointAlt={0.01}
           htmlElementsData={[
             { lat: vehiclePos[0], lng: vehiclePos[1], icon: isAir ? '✈️' : '🚢', size: 28 },
             { lat: from.lat, lng: from.lng, icon: '🟢', size: 18 },
@@ -279,7 +279,7 @@ export default function GlobeTracker({
           ]}
           htmlLat="lat"
           htmlLng="lng"
-          htmlAltitude={(d: any) => (isAir && d.icon !== '🟢' && d.icon !== '🔴' ? 0.16 : 0.04)}
+          htmlAltitude={0.04}
           htmlElement={(d: any) => {
             const el = document.createElement('div');
             el.innerHTML = d.icon;
