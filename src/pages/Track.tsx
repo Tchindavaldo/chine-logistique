@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import SEO from '../components/SEO';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import GlobeTracker from '../components/GlobeTracker';
 
 interface Insurance {
   name: string;
@@ -50,12 +51,14 @@ interface Shipment {
   tracking_progress?: number;
   tracking_stage?: string;
   total_duration_days?: number;
+  origin_country?: string;
+  destination_country?: string;
+  transport_mode?: string;
 }
 
-function ProgressSection({ shipment }: { shipment: Shipment }) {
+function computeProgress(shipment: Shipment) {
   const totalDays = shipment.total_duration_days || 0;
   const departure = shipment.departure_date ? new Date(shipment.departure_date) : null;
-
   let elapsedDays = 0;
   let autoProgress = 0;
   if (departure && totalDays > 0) {
@@ -66,9 +69,13 @@ function ProgressSection({ shipment }: { shipment: Shipment }) {
     elapsedDays = Math.max(0, Math.min(totalDays, diffDays));
     autoProgress = Math.round((elapsedDays / totalDays) * 100);
   }
-
   const progress = totalDays > 0 ? autoProgress : (shipment.tracking_progress || 0);
   const currentDay = totalDays > 0 ? Math.min(totalDays, elapsedDays + 1) : 0;
+  return { totalDays, elapsedDays, progress, currentDay };
+}
+
+function ProgressSection({ shipment }: { shipment: Shipment }) {
+  const { totalDays, elapsedDays, progress, currentDay } = computeProgress(shipment);
 
   const computeStage = (pct: number): string => {
     if (pct >= 100) return 'delivered';
@@ -550,6 +557,21 @@ export default function Track() {
                       />
                     </div>
                   )}
+
+                  {/* Visualisation Globe Terrestre */}
+                  {(() => {
+                    const { progress } = computeProgress(shipment);
+                    return (
+                      <GlobeTracker
+                        originCountry={shipment.origin_country || ''}
+                        destinationCountry={shipment.destination_country || ''}
+                        originCity={shipment.origin}
+                        destinationCity={shipment.destination}
+                        transportMode={shipment.transport_mode || 'sea'}
+                        progress={progress}
+                      />
+                    );
+                  })()}
 
                   {/* Google Map de la Chine */}
                   <div className="bg-white p-6 rounded-lg border border-gray-200 mb-8">

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Edit, Trash2, LogOut, Package, Upload, X, Settings, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Toast from '../components/Toast';
+import { COUNTRIES } from '../lib/countries';
 
 interface Shipment {
   id: string;
@@ -69,6 +70,9 @@ interface ShipmentForm {
   tracking_progress: number;
   tracking_stage: string;
   total_duration_days: number;
+  origin_country: string;
+  destination_country: string;
+  transport_mode: string;
 }
 
 export default function Admin() {
@@ -138,6 +142,9 @@ export default function Admin() {
     tracking_progress: 0,
     tracking_stage: 'picked_up',
     total_duration_days: 0,
+    origin_country: '',
+    destination_country: '',
+    transport_mode: 'sea',
   });
   const navigate = useNavigate();
 
@@ -365,6 +372,8 @@ export default function Admin() {
     // Validation des champs requis
     if (!formData.origin.trim()) errors.origin = 'Origin is required';
     if (!formData.destination.trim()) errors.destination = 'Destination is required';
+    if (!formData.origin_country) errors.origin_country = 'Pays d\'origine requis';
+    if (!formData.destination_country) errors.destination_country = 'Pays de destination requis';
     if (!formData.carrier.trim()) errors.carrier = 'Carrier is required';
     if (!formData.shipper_name.trim()) errors.shipper_name = 'Shipper name is required';
     if (!formData.receiver_name.trim()) errors.receiver_name = 'Receiver name is required';
@@ -504,6 +513,9 @@ export default function Admin() {
         tracking_progress: data.tracking_progress || 0,
         tracking_stage: data.tracking_stage || 'picked_up',
         total_duration_days: data.total_duration_days || 0,
+        origin_country: data.origin_country || '',
+        destination_country: data.destination_country || '',
+        transport_mode: data.transport_mode || 'sea',
       });
       setImagePreview(data.image_url || null);
       setEditingId(id);
@@ -608,6 +620,9 @@ export default function Admin() {
       tracking_progress: 0,
       tracking_stage: 'picked_up',
       total_duration_days: 0,
+      origin_country: '',
+      destination_country: '',
+      transport_mode: 'sea',
     });
     setImagePreview(null);
     setFormErrors({});
@@ -889,15 +904,15 @@ export default function Admin() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Origin *
+                    Origin (City) *
                   </label>
                   <input
                     type="text"
                     value={formData.origin}
                     onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                      formErrors.origin 
-                        ? 'border-red-500 focus:ring-red-600' 
+                      formErrors.origin
+                        ? 'border-red-500 focus:ring-red-600'
                         : 'border-gray-300 focus:ring-red-600'
                     }`}
                   />
@@ -908,21 +923,85 @@ export default function Admin() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Destination *
+                    Origin Country * 🌍
+                  </label>
+                  <select
+                    value={formData.origin_country}
+                    onChange={(e) => setFormData({ ...formData, origin_country: e.target.value })}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                      formErrors.origin_country
+                        ? 'border-red-500 focus:ring-red-600'
+                        : 'border-gray-300 focus:ring-red-600'
+                    }`}
+                  >
+                    <option value="">-- Sélectionner pays d'origine --</option>
+                    {COUNTRIES.map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {c.name} ({c.code})
+                      </option>
+                    ))}
+                  </select>
+                  {formErrors.origin_country && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.origin_country}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Destination (City) *
                   </label>
                   <input
                     type="text"
                     value={formData.destination}
                     onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                      formErrors.destination 
-                        ? 'border-red-500 focus:ring-red-600' 
+                      formErrors.destination
+                        ? 'border-red-500 focus:ring-red-600'
                         : 'border-gray-300 focus:ring-red-600'
                     }`}
                   />
                   {formErrors.destination && (
                     <p className="text-red-500 text-sm mt-1">{formErrors.destination}</p>
                   )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Destination Country * 🌍
+                  </label>
+                  <select
+                    value={formData.destination_country}
+                    onChange={(e) => setFormData({ ...formData, destination_country: e.target.value })}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                      formErrors.destination_country
+                        ? 'border-red-500 focus:ring-red-600'
+                        : 'border-gray-300 focus:ring-red-600'
+                    }`}
+                  >
+                    <option value="">-- Sélectionner pays de destination --</option>
+                    {COUNTRIES.map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {c.name} ({c.code})
+                      </option>
+                    ))}
+                  </select>
+                  {formErrors.destination_country && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.destination_country}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Mode de Transport * 🚢✈️
+                  </label>
+                  <select
+                    value={formData.transport_mode}
+                    onChange={(e) => setFormData({ ...formData, transport_mode: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
+                  >
+                    <option value="sea">🚢 Maritime (Bateau)</option>
+                    <option value="air">✈️ Aérien (Avion)</option>
+                  </select>
                 </div>
 
                 <div>
