@@ -5,8 +5,6 @@ import { getCountry } from '../lib/countries';
 interface GlobeTrackerProps {
   originCountry: string;
   destinationCountry: string;
-  originCity?: string;
-  destinationCity?: string;
   transportMode: string;
   progress: number;
 }
@@ -94,13 +92,25 @@ function positionAlong(path: [number, number][], t: number): [number, number] {
 export default function GlobeTracker({
   originCountry,
   destinationCountry,
-  originCity,
-  destinationCity,
   transportMode,
   progress,
 }: GlobeTrackerProps) {
   const globeRef = useRef<any>();
+  const containerRef = useRef<HTMLDivElement>(null);
   const [countries, setCountries] = useState<any>({ features: [] });
+  const [size, setSize] = useState({ width: 1050, height: 760 });
+
+  useEffect(() => {
+    const update = () => {
+      const w = containerRef.current?.clientWidth || window.innerWidth;
+      const width = Math.min(1050, w);
+      const height = Math.round(width * 0.72);
+      setSize({ width, height });
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   const isAir = transportMode === 'air';
   const from = useMemo(() => getCountry(originCountry), [originCountry]);
@@ -143,10 +153,23 @@ export default function GlobeTracker({
   }, [from, to, isAir]);
 
   const t = Math.max(0, Math.min(1, progress / 100));
-  const vehiclePos = useMemo(
+  const vehiclePos = useMemo<[number, number]>(
     () => (path.length ? positionAlong(path, t) : [0, 0]),
     [path, t]
   );
+  // Bearing (cap) entre position courante et point suivant — pour orienter le bec de l'avion
+  const bearing = useMemo(() => {
+    if (!path.length) return 0;
+    const next = positionAlong(path, Math.min(1, t + 0.005));
+    const lat1 = (vehiclePos[0] * Math.PI) / 180;
+    const lat2 = (next[0] * Math.PI) / 180;
+    const dLng = ((next[1] - vehiclePos[1]) * Math.PI) / 180;
+    const y = Math.sin(dLng) * Math.cos(lat2);
+    const x =
+      Math.cos(lat1) * Math.sin(lat2) -
+      Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+    return (Math.atan2(y, x) * 180) / Math.PI;
+  }, [path, t, vehiclePos]);
 
   // ISO-3 mapping pour matcher avec le geojson de world-atlas
   const ISO2_TO_NAME: Record<string, string[]> = {
@@ -221,30 +244,18 @@ export default function GlobeTracker({
 
   if (!from || !to) {
     return (
-      <div className="bg-yellow-50 border border-yellow-300 p-6 rounded-lg mb-8 text-yellow-800">
+      <div className="bg-yellow-50 border border-yellow-300 p-6 rounded-lg mt-6 text-yellow-800">
         ⚠️ Pays d'origine ou de destination non défini pour ce colis. Veuillez les renseigner dans l'admin.
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg border border-gray-200 mb-8">
-      <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
-        <span>🌍</span>
-        Visualisation Globale du Trajet
-      </h3>
-      <p className="text-sm text-gray-600 mb-4">
-        <span className="inline-block w-3 h-3 rounded-sm bg-green-500 mr-1"></span>
-        {from.name} {originCity ? `(${originCity})` : ''} →
-        <span className="inline-block w-3 h-3 rounded-sm bg-red-500 mx-1"></span>
-        {to.name} {destinationCity ? `(${destinationCity})` : ''} ·
-        {isAir ? ' ✈️ Voie aérienne' : ' 🚢 Voie maritime'}
-      </p>
-      <div className="flex justify-center bg-slate-100 rounded-lg overflow-hidden">
+    <div ref={containerRef} className="flex justify-center bg-slate-100 rounded-lg overflow-hidden w-full mt-6">
         <Globe
           ref={globeRef}
-          width={760}
-          height={520}
+          width={size.width}
+          height={size.height}
           backgroundColor="rgba(241,245,249,1)"
           globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
           bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
@@ -273,23 +284,49 @@ export default function GlobeTracker({
           pathDashAnimateTime={0}
           pathPointAlt={0.01}
           htmlElementsData={[
-            { lat: vehiclePos[0], lng: vehiclePos[1], icon: isAir ? '✈️' : '🚢', size: 28 },
-            { lat: from.lat, lng: from.lng, icon: '🟢', size: 18 },
-            { lat: to.lat, lng: to.lng, icon: '🔴', size: 18 },
+            {
+              lat: vehiclePos[0],
+              lng: vehiclePos[1],
+              type: isAir ? 'origin' : 'boat',
+              size: isAir ? 18 : 32,
+              rotate: bearing,
+            },
+            ...(isAir
+              ? []
+              : [{ lat: from.lat, lng: from.lng, type: 'origin', size: 18, rotate: 0 }]),
+            { lat: to.lat, lng: to.lng, type: 'dest', size: 18, rotate: 0 },
           ]}
           htmlLat="lat"
           htmlLng="lng"
           htmlAltitude={0.04}
           htmlElement={(d: any) => {
             const el = document.createElement('div');
-            el.innerHTML = d.icon;
-            el.style.fontSize = `${d.size}px`;
             el.style.pointerEvents = 'none';
-            el.style.filter = 'drop-shadow(0 0 6px rgba(255,255,255,0.7))';
+            el.style.transformOrigin = 'center';
+            if (d.type === 'plane') {
+              // SVG avion pointant vers la droite (0° = est) — rotation par bearing direct
+              el.innerHTML = `
+                <svg width="${d.size}" height="${d.size}" viewBox="-12 -12 24 24" style="overflow:visible">
+                  <g transform="rotate(${d.rotate})">
+                    <path d="M 10 0 L -8 -6 L -4 0 L -8 6 Z M -4 0 L -10 -3 L -10 3 Z"
+                          fill="#1e40af" stroke="white" stroke-width="0.8" stroke-linejoin="round"/>
+                  </g>
+                </svg>`;
+              el.style.filter = 'drop-shadow(0 0 4px rgba(255,255,255,0.9))';
+            } else if (d.type === 'boat') {
+              el.innerHTML = '🚢';
+              el.style.fontSize = `${d.size}px`;
+              el.style.filter = 'drop-shadow(0 0 6px rgba(255,255,255,0.7))';
+            } else if (d.type === 'origin') {
+              el.innerHTML = '🟢';
+              el.style.fontSize = `${d.size}px`;
+            } else {
+              el.innerHTML = '🔴';
+              el.style.fontSize = `${d.size}px`;
+            }
             return el;
           }}
         />
       </div>
-    </div>
   );
 }

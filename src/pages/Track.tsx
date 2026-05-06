@@ -178,6 +178,13 @@ function ProgressSection({ shipment }: { shipment: Shipment }) {
             </span>
           )}
         </div>
+
+        <GlobeTracker
+          originCountry={shipment.origin_country || ''}
+          destinationCountry={shipment.destination_country || ''}
+          transportMode={shipment.transport_mode || 'sea'}
+          progress={progress}
+        />
       </div>
     </div>
   );
@@ -557,21 +564,6 @@ export default function Track() {
                       />
                     </div>
                   )}
-
-                  {/* Visualisation Globe Terrestre */}
-                  {(() => {
-                    const { progress } = computeProgress(shipment);
-                    return (
-                      <GlobeTracker
-                        originCountry={shipment.origin_country || ''}
-                        destinationCountry={shipment.destination_country || ''}
-                        originCity={shipment.origin}
-                        destinationCity={shipment.destination}
-                        transportMode={shipment.transport_mode || 'sea'}
-                        progress={progress}
-                      />
-                    );
-                  })()}
 
                   {/* Google Map de la Chine */}
                   <div className="bg-white p-6 rounded-lg border border-gray-200 mb-8">
