@@ -76,7 +76,7 @@ export default function Footer() {
           </div>
 
           <div className="border-t border-gray-800 pt-8 text-center text-gray-400 text-sm">
-            <p>&copy; 2025 ChineLogistique. All rights reserved.</p>
+            <p>&copy; 2025 ChineLogistique. All rights reserved. Website by <a href="https://rauval.com" target="_blank" rel="noopener" className="hover:text-white underline">Rauval</a>.</p>
           </div>
         </div>
       </footer>
