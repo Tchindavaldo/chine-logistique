@@ -1,3 +1,4 @@
+import { formatPauseDate, autoPauseMessage, renderPauseMessage, PAUSE_REASONS, totalPausedDays, effectiveElapsedDays, daysSince } from '../lib/pause';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit, Trash2, LogOut, Package, Upload, X, Settings, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -73,6 +74,12 @@ interface ShipmentForm {
   origin_country: string;
   destination_country: string;
   transport_mode: string;
+  is_paused: boolean;
+  pause_reason: string;
+  pause_reason_detail: string;
+  paused_at: string;
+  paused_days: number;
+  pause_message: string;
 }
 
 export default function Admin() {
@@ -145,7 +152,14 @@ export default function Admin() {
     origin_country: '',
     destination_country: '',
     transport_mode: 'sea',
+    is_paused: false,
+    pause_reason: '',
+    pause_reason_detail: '',
+    paused_at: '',
+    paused_days: 0,
+    pause_message: '',
   });
+  const [pauseMessageTouched, setPauseMessageTouched] = useState(false);
   const navigate = useNavigate();
 
   const computeStageFromProgress = (progressPct: number): string => {
@@ -172,16 +186,8 @@ export default function Admin() {
 
   useEffect(() => {
     if (formData.total_duration_days > 0 && formData.departure_date) {
-      const expected = addDaysISO(formData.departure_date, formData.total_duration_days);
-      const startUTC = Date.UTC(
-        new Date(formData.departure_date).getFullYear(),
-        new Date(formData.departure_date).getMonth(),
-        new Date(formData.departure_date).getDate()
-      );
-      const today = new Date();
-      const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-      const diffDays = Math.floor((todayUTC - startUTC) / 86400000);
-      const elapsed = Math.max(0, Math.min(formData.total_duration_days, diffDays));
+      const expected = addDaysISO(formData.departure_date, formData.total_duration_days + totalPausedDays(formData));
+      const elapsed = effectiveElapsedDays(formData.departure_date, formData.total_duration_days, formData);
       const autoProgress = Math.round((elapsed / formData.total_duration_days) * 100);
       const autoStage = computeStageFromProgress(autoProgress);
       if (
@@ -197,7 +203,7 @@ export default function Admin() {
         }));
       }
     }
-  }, [formData.departure_date, formData.total_duration_days, formData.expected_delivery_date, formData.tracking_progress, formData.tracking_stage]);
+  }, [formData.departure_date, formData.total_duration_days, formData.expected_delivery_date, formData.tracking_progress, formData.tracking_stage, formData.is_paused, formData.paused_at, formData.paused_days]);
 
   useEffect(() => {
     const initializeAdmin = async () => {
@@ -400,6 +406,22 @@ export default function Admin() {
     }
 
     // Si une durée totale est définie, la date de départ doit être valide
+    if (formData.is_paused && !formData.pause_reason) {
+      errors.pause_reason = 'Raison de la pause requise';
+    }
+    if (formData.is_paused) {
+      if (!formData.paused_at || !isValidISODate(formData.paused_at)) {
+        errors.paused_at = 'Date de début de pause requise';
+      } else if (
+        formData.total_duration_days > 0 && formData.departure_date &&
+        formData.paused_at > addDaysISO(formData.departure_date, formData.total_duration_days + (formData.paused_days || 0))
+      ) {
+        errors.paused_at = "La pause ne peut pas commencer après la date d'arrivée";
+      } else if (formData.departure_date && formData.paused_at < formData.departure_date) {
+        errors.paused_at = 'La pause ne peut pas commencer avant la date de départ';
+      }
+    }
+
     if (formData.total_duration_days > 0) {
       if (!formData.departure_date) {
         errors.departure_date = 'Departure date is required when total duration is set';
@@ -414,9 +436,9 @@ export default function Admin() {
         errors.total_duration_days =
           '✈️ Mode aérien : la durée ne peut pas dépasser 7 jours (l\'avion est rapide)';
       }
-      if (formData.transport_mode === 'sea' && formData.total_duration_days < 30) {
+      if (formData.transport_mode === 'sea' && formData.total_duration_days < 60) {
         errors.total_duration_days =
-          '🚢 Mode maritime : la durée doit être d\'au moins 30 jours (le bateau est lent)';
+          '🚢 Mode maritime : la durée doit être d\'au moins 60 jours (le bateau est lent)';
       }
     }
 
@@ -441,7 +463,7 @@ export default function Admin() {
       if (editingId) {
         const { error } = await supabase
           .from('shipments')
-          .update({ ...formData, updated_at: new Date().toISOString() })
+          .update({ ...formData, paused_at: formData.paused_at || null, updated_at: new Date().toISOString() })
           .eq('id', editingId);
 
         if (error) throw error;
@@ -450,7 +472,7 @@ export default function Admin() {
       } else {
         // Générer un code de tracking si non fourni
         const trackingNumber = formData.tracking_number || generateTrackingNumber();
-        const shipmentData = { ...formData, tracking_number: trackingNumber };
+        const shipmentData = { ...formData, paused_at: formData.paused_at || null, tracking_number: trackingNumber };
         
         const { error } = await supabase
           .from('shipments')
@@ -525,7 +547,14 @@ export default function Admin() {
         origin_country: data.origin_country || '',
         destination_country: data.destination_country || '',
         transport_mode: data.transport_mode || 'sea',
+        is_paused: data.is_paused || false,
+        pause_reason: data.pause_reason || '',
+        pause_reason_detail: data.pause_reason_detail || '',
+        paused_at: data.paused_at || '',
+        paused_days: data.paused_days || 0,
+        pause_message: data.pause_message || '',
       });
+      setPauseMessageTouched(!!data.pause_message);
       setImagePreview(data.image_url || null);
       setEditingId(id);
       setShowForm(true);
@@ -632,7 +661,14 @@ export default function Admin() {
       origin_country: '',
       destination_country: '',
       transport_mode: 'sea',
+      is_paused: false,
+      pause_reason: '',
+      pause_reason_detail: '',
+      paused_at: '',
+      paused_days: 0,
+      pause_message: '',
     });
+    setPauseMessageTouched(false);
     setImagePreview(null);
     setFormErrors({});
   };
@@ -885,7 +921,7 @@ export default function Admin() {
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <section className="rounded-xl border border-gray-200 bg-gray-50 p-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-red-600"></span><div><h4 className="text-base font-bold text-gray-900">Identification</h4><p className="text-xs text-gray-500">Numéro de suivi et statut</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Tracking Number *
@@ -911,6 +947,8 @@ export default function Admin() {
                   />
                 </div>
 
+                </div></section>
+              <section className="rounded-xl border border-sky-200 bg-sky-50/60 p-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-sky-500"></span><div><h4 className="text-base font-bold text-gray-900">Itinéraire & transport</h4><p className="text-xs text-gray-500">Origine, destination, bateau ou avion</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Origin (City) *
@@ -1013,6 +1051,8 @@ export default function Admin() {
                   </select>
                 </div>
 
+                </div></section>
+              <section className="rounded-xl border border-gray-200 bg-white p-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-gray-500"></span><div><h4 className="text-base font-bold text-gray-900">Transporteur & marchandise</h4><p className="text-xs text-gray-500">Qui transporte et quoi</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Carrier *
@@ -1092,6 +1132,8 @@ export default function Admin() {
                   />
                 </div>
 
+                </div></section>
+              <section className="rounded-xl border border-amber-200 bg-amber-50/60 p-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-amber-500"></span><div><h4 className="text-base font-bold text-gray-900">Paiement & fret</h4><p className="text-xs text-gray-500">Mode de paiement et coût</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Payment Mode
@@ -1128,6 +1170,8 @@ export default function Admin() {
                   />
                 </div>
 
+                </div></section>
+              <section className="rounded-xl border border-violet-200 bg-violet-50/60 p-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-violet-500"></span><div><h4 className="text-base font-bold text-gray-900">Dates & horaires</h4><p className="text-xs text-gray-500">Départ, livraison prévue</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Expected Delivery Date
@@ -1190,10 +1234,10 @@ export default function Admin() {
                     placeholder="e.g., 15:00"
                   />
                 </div>
-              </div>
+              </div></section>
 
-              <div className="border-t border-gray-200 pt-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">Shipper Information</h4>
+              <div className="rounded-xl border border-green-200 bg-green-50/60 p-5">
+                <div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-green-500"></span><div><h4 className="text-base font-bold text-gray-900">Expéditeur</h4><p className="text-xs text-gray-500">Shipper information</p></div></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1268,8 +1312,8 @@ export default function Admin() {
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 pt-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">Receiver Information</h4>
+              <div className="rounded-xl border border-teal-200 bg-teal-50/60 p-5">
+                <div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-teal-500"></span><div><h4 className="text-base font-bold text-gray-900">Destinataire</h4><p className="text-xs text-gray-500">Receiver information</p></div></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1344,8 +1388,9 @@ export default function Admin() {
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 pt-6">
+              <div className="rounded-xl border border-indigo-200 bg-indigo-50/30 p-5">
                 <div className="space-y-6">
+                  <div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-indigo-500"></span><div><h4 className="text-base font-bold text-gray-900">Commentaire & suivi</h4><p className="text-xs text-gray-500">Informations complémentaires</p></div></div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Comment / Additional Information
@@ -1358,6 +1403,7 @@ export default function Admin() {
                     />
                   </div>
 
+                  <div className="border-t-2 border-dashed border-gray-200 pt-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-indigo-500"></span><div><h4 className="text-base font-bold text-gray-900">Suivi & progression</h4><p className="text-xs text-gray-500">Statut, étape et durée du trajet</p></div></div></div>
                   {/* Status Date and Time */}
                   <div className="grid grid-cols-2 gap-6">
                     <div>
@@ -1368,7 +1414,8 @@ export default function Admin() {
                         type="date"
                         value={formData.status_date}
                         onChange={(e) => setFormData({ ...formData, status_date: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
+                        disabled={formData.total_duration_days > 0}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                       />
                     </div>
                     <div>
@@ -1379,10 +1426,16 @@ export default function Admin() {
                         type="time"
                         value={formData.status_time}
                         onChange={(e) => setFormData({ ...formData, status_time: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
+                        disabled={formData.total_duration_days > 0}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                       />
                     </div>
                   </div>
+                  <p className="text-xs text-gray-500 -mt-4">
+                    {formData.total_duration_days > 0
+                      ? 'Calculées automatiquement : la page de suivi affiche la date du jour comme dernière mise à jour.'
+                      : 'Date et heure de la dernière mise à jour du statut, affichées au client à côté du statut.'}
+                  </p>
 
                   {/* Tracking Progress */}
                   <div>
@@ -1434,7 +1487,7 @@ export default function Admin() {
                     </label>
                     <input
                       type="number"
-                      min={formData.transport_mode === 'sea' ? 30 : 0}
+                      min={formData.transport_mode === 'sea' ? 60 : 0}
                       max={formData.transport_mode === 'air' ? 7 : undefined}
                       value={formData.total_duration_days}
                       onChange={(e) => setFormData({ ...formData, total_duration_days: parseInt(e.target.value) || 0 })}
@@ -1443,7 +1496,7 @@ export default function Admin() {
                           ? 'border-red-500 focus:ring-red-600'
                           : 'border-gray-300 focus:ring-red-600'
                       }`}
-                      placeholder={formData.transport_mode === 'air' ? 'Max 7 jours' : 'Min 30 jours'}
+                      placeholder={formData.transport_mode === 'air' ? 'Max 7 jours' : 'Min 60 jours'}
                     />
                     {formErrors.total_duration_days && (
                       <p className="text-red-500 text-sm mt-1">{formErrors.total_duration_days}</p>
@@ -1451,7 +1504,7 @@ export default function Admin() {
                     <p className="text-xs text-gray-500 mt-1">
                       {formData.transport_mode === 'air'
                         ? '✈️ Mode aérien : durée maximale 7 jours.'
-                        : '🚢 Mode maritime : durée minimale 30 jours.'}
+                        : '🚢 Mode maritime : durée minimale 60 jours.'}
                       {' '}La progression sera calculée automatiquement chaque jour à partir de la date de départ.
                     </p>
                     {formData.total_duration_days > 0 && !isValidISODate(formData.departure_date) && (
@@ -1466,6 +1519,136 @@ export default function Admin() {
                     )}
                   </div>
 
+                  <div className="border-t-2 border-dashed border-gray-200 pt-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-orange-500"></span><div><h4 className="text-base font-bold text-gray-900">Pause du trajet <span className="ml-2 align-middle text-[10px] font-bold uppercase tracking-wide bg-orange-500 text-white px-2 py-0.5 rounded-full">Nouveau</span></h4><p className="text-xs text-gray-500">Escale, douane, météo… la progression est gelée</p></div></div></div>
+                  {/* Pause */}
+                  <div className={`p-4 rounded-lg border-2 ${formData.is_paused ? 'border-orange-400 bg-orange-50' : 'border-gray-200'}`}>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.is_paused}
+                        onChange={(e) => {
+                          const today = new Date().toISOString().slice(0, 10);
+                          if (e.target.checked) {
+                            setFormData({ ...formData, is_paused: true, paused_at: today });
+                          } else {
+                            setFormData({
+                              ...formData,
+                              is_paused: false,
+                              paused_days: (formData.paused_days || 0) + daysSince(formData.paused_at),
+                              paused_at: '',
+                              pause_reason: '',
+                              pause_reason_detail: '',
+                              pause_message: '',
+                            });
+                          }
+                        }}
+                        className="w-5 h-5 accent-orange-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700">
+                        Mettre le colis en pause ({formData.transport_mode === 'air' ? 'avion' : 'bateau'})
+                      </span>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1">
+                      La progression est gelée pendant la pause ; la date de livraison prévue est décalée d'autant de jours.
+                      {formData.paused_days > 0 && ` Jours de pause déjà cumulés : ${formData.paused_days}.`}
+                    </p>
+                    {formData.is_paused && (
+                      <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Raison de la pause</label>
+                          <input
+                            type="text"
+                            list="pause-reasons"
+                            value={formData.pause_reason}
+                            onChange={(e) => setFormData({ ...formData, pause_reason: e.target.value })}
+                            placeholder="Choisir ou écrire une raison"
+                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 ${formErrors.pause_reason ? 'border-red-500' : 'border-gray-300'}`}
+                          />
+                          <datalist id="pause-reasons">
+                            {PAUSE_REASONS.map((r) => (
+                              <option key={r} value={r} />
+                            ))}
+                          </datalist>
+                          {formErrors.pause_reason && <p className="text-red-500 text-sm mt-1">{formErrors.pause_reason}</p>}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Lieu (optionnel)
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.pause_reason_detail}
+                            onChange={(e) => setFormData({ ...formData, pause_reason_detail: e.target.value })}
+                            placeholder="Ex : Dubaï"
+                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 ${formErrors.pause_reason_detail ? 'border-red-500' : 'border-gray-300'}`}
+                          />
+                          {formErrors.pause_reason_detail && <p className="text-red-500 text-sm mt-1">{formErrors.pause_reason_detail}</p>}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">En pause depuis le</label>
+                          <input
+                            type="date"
+                            value={formData.paused_at}
+                            min={formData.departure_date || undefined}
+                            max={formData.total_duration_days > 0 && formData.departure_date ? addDaysISO(formData.departure_date, formData.total_duration_days + (formData.paused_days || 0)) : undefined}
+                            onChange={(e) => setFormData({ ...formData, paused_at: e.target.value })}
+                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 ${formErrors.paused_at ? 'border-red-500' : 'border-gray-300'}`}
+                          />
+                          {formErrors.paused_at ? (
+                            <p className="text-red-500 text-sm mt-1">{formErrors.paused_at}</p>
+                          ) : (
+                            <p className="text-xs text-gray-500 mt-1">
+                              Entre la date de départ et la date d'arrivée.
+                              {formData.paused_at && (formData.paused_at > new Date().toISOString().slice(0, 10)
+                                ? ' Pause programmée : le colis continue d\'avancer jusqu\'à cette date.'
+                                : ` Arrêté depuis ${daysSince(formData.paused_at)} jour(s).`)}
+                            </p>
+                          )}
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Texte affiché au client</label>
+                          <div className="flex items-stretch w-full border border-gray-300 rounded-lg bg-white overflow-hidden focus-within:ring-2 focus-within:ring-orange-500">
+                            <input
+                              type="text"
+                              value={pauseMessageTouched ? formData.pause_message : autoPauseMessage(formData.pause_reason, formData.pause_reason_detail, formData.paused_at)}
+                              onChange={(e) => { setPauseMessageTouched(true); setFormData({ ...formData, pause_message: e.target.value }); }}
+                              className="flex-1 min-w-0 px-4 py-2 border-0 focus:outline-none"
+                            />
+                            {formatPauseDate(formData.paused_at) && (
+                              <span
+                                title="Date fixe : modifiable seulement via « En pause depuis le »"
+                                className="flex items-center px-3 bg-orange-100 text-orange-800 font-semibold text-sm whitespace-nowrap select-none border-l border-orange-200"
+                              >
+                                {formatPauseDate(formData.paused_at)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between mt-1 gap-2">
+                            <p className="text-xs text-gray-500">
+                              {pauseMessageTouched
+                                ? 'Texte personnalisé. Laissé vide, le texte automatique sera utilisé.'
+                                : 'Texte automatique : il s\'adapte seul (prévue le / depuis le) selon la date.'}
+                            </p>
+                            {pauseMessageTouched && (
+                              <button
+                                type="button"
+                                onClick={() => { setPauseMessageTouched(false); setFormData({ ...formData, pause_message: '' }); }}
+                                className="text-xs text-orange-600 hover:underline whitespace-nowrap"
+                              >
+                                Revenir au texte automatique
+                              </button>
+                            )}
+                          </div>
+                          <div className="mt-2 p-3 bg-orange-50 border-l-4 border-orange-500 rounded">
+                            <p className="text-[10px] uppercase tracking-wide text-orange-500 font-bold mb-1">Aperçu suivi client</p>
+                            <p className="font-semibold text-orange-800">{renderPauseMessage(formData)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="border-t-2 border-dashed border-gray-200 pt-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-emerald-500"></span><div><h4 className="text-base font-bold text-gray-900">Assurances & taxes</h4><p className="text-xs text-gray-500">Options financières</p></div></div></div>
                   {/* Insurances */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1563,6 +1746,7 @@ export default function Admin() {
                     </div>
                   </div>
 
+                  <div className="border-t-2 border-dashed border-gray-200 pt-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-gray-400"></span><div><h4 className="text-base font-bold text-gray-900">Photo du colis</h4><p className="text-xs text-gray-500">Image visible par le client</p></div></div></div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Shipment Image

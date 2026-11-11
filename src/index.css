@@ -53,3 +53,13 @@ html, body {
     height: auto;
   }
 }
+
+/* Admin form: keep fields white on tinted sections */
+form section input:not([type=checkbox]):not([type=radio]):not(:disabled),
+form section select:not(:disabled),
+form section textarea,
+form .rounded-xl input:not([type=checkbox]):not([type=radio]):not(:disabled),
+form .rounded-xl select:not(:disabled),
+form .rounded-xl textarea {
+  background-color: #fff;
+}

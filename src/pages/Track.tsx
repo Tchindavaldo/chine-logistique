@@ -1,3 +1,4 @@
+import { effectiveElapsedDays, renderPauseMessage } from '../lib/pause';
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, Package, User, MapPin } from 'lucide-react';
@@ -54,6 +55,12 @@ interface Shipment {
   origin_country?: string;
   destination_country?: string;
   transport_mode?: string;
+  is_paused?: boolean;
+  pause_reason?: string;
+  pause_reason_detail?: string;
+  paused_at?: string;
+  paused_days?: number;
+  pause_message?: string;
 }
 
 function computeProgress(shipment: Shipment) {
@@ -62,11 +69,7 @@ function computeProgress(shipment: Shipment) {
   let elapsedDays = 0;
   let autoProgress = 0;
   if (departure && totalDays > 0) {
-    const today = new Date();
-    const startUTC = Date.UTC(departure.getFullYear(), departure.getMonth(), departure.getDate());
-    const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-    const diffDays = Math.floor((todayUTC - startUTC) / (1000 * 60 * 60 * 24));
-    elapsedDays = Math.max(0, Math.min(totalDays, diffDays));
+    elapsedDays = effectiveElapsedDays(shipment.departure_date!, totalDays, shipment);
     autoProgress = Math.round((elapsedDays / totalDays) * 100);
   }
   const progress = totalDays > 0 ? autoProgress : (shipment.tracking_progress || 0);
@@ -104,6 +107,11 @@ function ProgressSection({ shipment }: { shipment: Shipment }) {
         .blink-day { animation: blink-day 1s ease-in-out infinite; }
       `}</style>
       <h3 className="text-xl font-bold mb-6 text-center">Package Tracking Progress</h3>
+      {shipment.is_paused && (
+        <div className="max-w-4xl mx-auto mb-6 p-4 bg-orange-50 border-l-4 border-orange-500 rounded">
+          <p className="font-semibold text-orange-800">{renderPauseMessage(shipment)}</p>
+        </div>
+      )}
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between mb-2">
           {stages.map((s) => (
@@ -349,9 +357,13 @@ export default function Track() {
                     <div className="tracking-box bg-gray-50 p-4 rounded-lg border border-gray-200">
                       <div className="tracking-time-box mb-3">
                         <div className="tracking-time text-lg font-bold text-gray-800">
-                          {shipment.status_date ? formatDate(shipment.status_date) : 'N/A'}
+                          {(shipment.total_duration_days || 0) > 0
+                            ? formatDate(new Date().toISOString().slice(0, 10))
+                            : shipment.status_date ? formatDate(shipment.status_date) : 'N/A'}
                         </div>
-                        <span className="text-sm text-gray-600">{shipment.status_time || 'N/A'}</span>
+                        <span className="text-sm text-gray-600">
+                          {(shipment.total_duration_days || 0) > 0 ? 'Mis à jour automatiquement' : shipment.status_time || 'N/A'}
+                        </span>
                       </div>
                       <div className="tracking-location style-7 flex items-start gap-3">
                         <span className="dott w-3 h-3 bg-red-500 rounded-full mt-1 flex-shrink-0 animate-pulse"></span>
