@@ -730,17 +730,18 @@ export default function Admin() {
         {activeTab === 'shipments' && (
           <>
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-gray-800">Shipments</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Shipments</h2>
               <button
                 onClick={() => {
                   resetForm();
                   setEditingId(null);
                   setShowForm(true);
                 }}
-                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition"
+                className="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white px-3 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-semibold transition whitespace-nowrap"
               >
-                <Plus size={20} />
-                Add New Shipment
+                <Plus size={18} />
+                <span className="sm:hidden">Nouveau</span>
+                <span className="hidden sm:inline">Add New Shipment</span>
               </button>
             </div>
 
@@ -902,10 +903,10 @@ export default function Admin() {
         )}
 
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full my-8">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-2xl font-bold text-gray-900">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-stretch sm:items-center justify-center p-0 sm:p-4 z-50 overflow-y-auto">
+          <div className="bg-white sm:rounded-lg shadow-xl max-w-4xl w-full h-[100dvh] sm:h-auto sm:my-8 flex flex-col">
+            <div className="flex items-center justify-between px-4 py-4 sm:p-6 border-b border-gray-200 shrink-0">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
                 {editingId ? 'Edit Shipment' : 'Add New Shipment'}
               </h3>
               <button
@@ -920,8 +921,8 @@ export default function Admin() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-              <section className="rounded-xl border border-gray-200 bg-gray-50 p-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-red-600"></span><div><h4 className="text-base font-bold text-gray-900">Identification</h4><p className="text-xs text-gray-500">Numéro de suivi et statut</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit} className="p-3 sm:p-6 space-y-4 sm:space-y-6 flex-1 min-h-0 sm:flex-none sm:max-h-[calc(100vh-200px)] overflow-y-auto">
+              <section className="rounded-xl border border-gray-200 bg-gray-50 p-3 sm:p-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-red-600"></span><div><h4 className="text-base font-bold text-gray-900">Identification</h4><p className="text-xs text-gray-500">Numéro de suivi et statut</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Tracking Number *
@@ -948,7 +949,7 @@ export default function Admin() {
                 </div>
 
                 </div></section>
-              <section className="rounded-xl border border-sky-200 bg-sky-50/60 p-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-sky-500"></span><div><h4 className="text-base font-bold text-gray-900">Itinéraire & transport</h4><p className="text-xs text-gray-500">Origine, destination, bateau ou avion</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <section className="rounded-xl border border-sky-200 bg-sky-50/60 p-3 sm:p-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-sky-500"></span><div><h4 className="text-base font-bold text-gray-900">Itinéraire & transport</h4><p className="text-xs text-gray-500">Origine, destination, bateau ou avion</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Origin (City) *
@@ -1052,7 +1053,7 @@ export default function Admin() {
                 </div>
 
                 </div></section>
-              <section className="rounded-xl border border-gray-200 bg-white p-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-gray-500"></span><div><h4 className="text-base font-bold text-gray-900">Transporteur & marchandise</h4><p className="text-xs text-gray-500">Qui transporte et quoi</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <section className="rounded-xl border border-gray-200 bg-white p-3 sm:p-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-gray-500"></span><div><h4 className="text-base font-bold text-gray-900">Transporteur & marchandise</h4><p className="text-xs text-gray-500">Qui transporte et quoi</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Carrier *
@@ -1133,7 +1134,7 @@ export default function Admin() {
                 </div>
 
                 </div></section>
-              <section className="rounded-xl border border-amber-200 bg-amber-50/60 p-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-amber-500"></span><div><h4 className="text-base font-bold text-gray-900">Paiement & fret</h4><p className="text-xs text-gray-500">Mode de paiement et coût</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <section className="rounded-xl border border-amber-200 bg-amber-50/60 p-3 sm:p-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-amber-500"></span><div><h4 className="text-base font-bold text-gray-900">Paiement & fret</h4><p className="text-xs text-gray-500">Mode de paiement et coût</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Payment Mode
@@ -1171,7 +1172,7 @@ export default function Admin() {
                 </div>
 
                 </div></section>
-              <section className="rounded-xl border border-violet-200 bg-violet-50/60 p-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-violet-500"></span><div><h4 className="text-base font-bold text-gray-900">Dates & horaires</h4><p className="text-xs text-gray-500">Départ, livraison prévue</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <section className="rounded-xl border border-violet-200 bg-violet-50/60 p-3 sm:p-5"><div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-violet-500"></span><div><h4 className="text-base font-bold text-gray-900">Dates & horaires</h4><p className="text-xs text-gray-500">Départ, livraison prévue</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Expected Delivery Date
@@ -1236,7 +1237,7 @@ export default function Admin() {
                 </div>
               </div></section>
 
-              <div className="rounded-xl border border-green-200 bg-green-50/60 p-5">
+              <div className="rounded-xl border border-green-200 bg-green-50/60 p-3 sm:p-5">
                 <div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-green-500"></span><div><h4 className="text-base font-bold text-gray-900">Expéditeur</h4><p className="text-xs text-gray-500">Shipper information</p></div></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -1312,7 +1313,7 @@ export default function Admin() {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-teal-200 bg-teal-50/60 p-5">
+              <div className="rounded-xl border border-teal-200 bg-teal-50/60 p-3 sm:p-5">
                 <div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-teal-500"></span><div><h4 className="text-base font-bold text-gray-900">Destinataire</h4><p className="text-xs text-gray-500">Receiver information</p></div></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -1388,7 +1389,7 @@ export default function Admin() {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-indigo-200 bg-indigo-50/30 p-5">
+              <div className="rounded-xl border border-indigo-200 bg-indigo-50/30 p-3 sm:p-5">
                 <div className="space-y-6">
                   <div className="flex items-start gap-3 mb-4"><span className="w-1.5 self-stretch rounded-full bg-indigo-500"></span><div><h4 className="text-base font-bold text-gray-900">Commentaire & suivi</h4><p className="text-xs text-gray-500">Informations complémentaires</p></div></div>
                   <div>

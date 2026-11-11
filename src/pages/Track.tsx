@@ -98,7 +98,7 @@ function ProgressSection({ shipment }: { shipment: Shipment }) {
   ];
 
   return (
-    <div className="bg-white p-6 border-b-2 border-gray-200">
+    <div className="bg-white px-3 py-6 sm:p-6 border-b-2 border-gray-200">
       <style>{`
         @keyframes blink-day {
           0%, 100% { opacity: 1; transform: scale(1.4); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
@@ -187,12 +187,14 @@ function ProgressSection({ shipment }: { shipment: Shipment }) {
           )}
         </div>
 
+        <div className="-mx-3 sm:mx-0">
         <GlobeTracker
           originCountry={shipment.origin_country || ''}
           destinationCountry={shipment.destination_country || ''}
           transportMode={shipment.transport_mode || 'sea'}
           progress={progress}
         />
+        </div>
       </div>
     </div>
   );
@@ -315,7 +317,7 @@ export default function Track() {
       </section>
 
       <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-2 sm:px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold mb-6">Enter Tracking Number Here</h2>

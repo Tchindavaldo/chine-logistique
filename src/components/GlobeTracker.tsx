@@ -485,7 +485,9 @@ export default function GlobeTracker({
     const update = () => {
       const w = containerRef.current?.clientWidth || window.innerWidth;
       const width = Math.min(1050, w);
-      setSize({ width, height: Math.round(width * 0.7) });
+      // Mobile: taller frame so the globe isn't squashed
+      const ratio = width < 640 ? 1.25 : width < 900 ? 0.85 : 0.7;
+      setSize({ width, height: Math.round(width * ratio) });
     };
     update();
     window.addEventListener('resize', update);
@@ -590,7 +592,7 @@ export default function GlobeTracker({
       controls.minDistance = 140;
     }
     const [midLat, midLng] = greatCircle(from, to, 0.5);
-    globe.pointOfView({ lat: midLat, lng: midLng, altitude: 2.1 }, 1800);
+    globe.pointOfView({ lat: midLat, lng: midLng, altitude: (containerRef.current?.clientWidth || window.innerWidth) < 640 ? 1.7 : 2.1 }, 1800);
   }, [globeReady, from, to]);
 
   // --- Trajectoires parcourue / restante ---
