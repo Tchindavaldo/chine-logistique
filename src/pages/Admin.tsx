@@ -1,7 +1,8 @@
 import { formatPauseDate, autoPauseMessage, renderPauseMessage, PAUSE_REASONS, totalPausedDays, effectiveElapsedDays, daysSince } from '../lib/pause';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, LogOut, Package, Upload, X, Settings, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit, Trash2, LogOut, Package, Upload, X, Settings, MessageCircle, ChevronLeft, ChevronRight, MoreVertical, QrCode, Download, Copy } from 'lucide-react';
+import QRCode from 'qrcode';
 import { supabase } from '../lib/supabase';
 import Toast from '../components/Toast';
 import { COUNTRIES } from '../lib/countries';
@@ -108,6 +109,9 @@ export default function Admin() {
   });
   const [savingSettings, setSavingSettings] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [menuOpen, setMenuOpen] = useState<{ id: string; top: number; right: number } | null>(null);
+  const [qrModal, setQrModal] = useState<{ trackingNumber: string; dataUrl: string; url: string } | null>(null);
+  const [qrPhone, setQrPhone] = useState('');
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [whatsappPhone, setWhatsappPhone] = useState('');
   const [whatsappMessage, setWhatsappMessage] = useState('');
@@ -584,7 +588,85 @@ export default function Admin() {
     }
   };
 
+  const handleOpenQrCode = async (trackingNumber: string) => {
+    setMenuOpen(null);
+    try {
+      const url = `${window.location.origin}/track?tracking=${encodeURIComponent(trackingNumber)}`;
+      const dataUrl = await QRCode.toDataURL(url, {
+        width: 600,
+        margin: 2,
+        color: { dark: '#000000', light: '#FFFFFF' },
+      });
+      setQrModal({ trackingNumber, dataUrl, url });
+    } catch (err) {
+      console.error(err);
+      setToast({ message: 'Erreur lors de la génération du QR code', type: 'error' });
+    }
+  };
+
+  const handleDownloadQr = () => {
+    if (!qrModal) return;
+    const a = document.createElement('a');
+    a.href = qrModal.dataUrl;
+    a.download = `qrcode-${qrModal.trackingNumber}.png`;
+    a.click();
+  };
+
+  const handleCopyQr = async () => {
+    if (!qrModal) return;
+    try {
+      const blob = await (await fetch(qrModal.dataUrl)).blob();
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      setToast({ message: 'QR code copié', type: 'success' });
+    } catch {
+      setToast({ message: 'Copie impossible sur ce navigateur, utilisez Télécharger', type: 'error' });
+    }
+  };
+
+  const handleSendQrWhatsApp = async () => {
+    if (!qrModal) return;
+    const text = `Bonjour, voici le QR code de suivi de votre colis ${qrModal.trackingNumber}.\nScannez-le ou ouvrez ce lien : ${qrModal.url}`;
+    const blob = await (await fetch(qrModal.dataUrl)).blob();
+    const file = new File([blob], `qrcode-${qrModal.trackingNumber}.png`, { type: 'image/png' });
+
+    // Mobile : partage natif avec l'image jointe (WhatsApp apparaît dans la liste)
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], text });
+        return;
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') return;
+      }
+    }
+
+    // Ordinateur : on copie l'image, on ouvre WhatsApp avec le message, le QR se colle avec Ctrl+V
+    let copied = false;
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      copied = true;
+    } catch { /* ignoré */ }
+    if (!copied) handleDownloadQr();
+    const phone = qrPhone.replace(/[^0-9]/g, '');
+    const base = phone.length === 9 ? `https://wa.me/237${phone}` : 'https://wa.me/';
+    window.open(`${base}?text=${encodeURIComponent(text)}`, '_blank');
+    setToast({
+      message: copied ? 'QR code copié : collez-le dans la discussion (Ctrl+V)' : 'QR code téléchargé : joignez-le dans la discussion',
+      type: 'info',
+    });
+  };
+
+  const handleCopyTrackingLink = async () => {
+    if (!qrModal) return;
+    try {
+      await navigator.clipboard.writeText(qrModal.url);
+      setToast({ message: 'Lien copié', type: 'success' });
+    } catch {
+      setToast({ message: 'Copie du lien impossible', type: 'error' });
+    }
+  };
+
   const handleOpenWhatsApp = (trackingNumber: string) => {
+    setMenuOpen(null);
     setSelectedTrackingNumber(trackingNumber);
     setWhatsappPhone('');
     setWhatsappMessage(`Bonjour, votre numéro de suivi est : ${trackingNumber}`);
@@ -803,23 +885,14 @@ export default function Admin() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
-                          onClick={() => handleOpenWhatsApp(shipment.tracking_number)}
-                          className="text-green-600 hover:text-green-900 mr-4"
-                          title="Envoyer via WhatsApp"
+                          onClick={(e) => {
+                            const r = e.currentTarget.getBoundingClientRect();
+                            setMenuOpen(menuOpen?.id === shipment.id ? null : { id: shipment.id, top: r.bottom + 4, right: window.innerWidth - r.right });
+                          }}
+                          className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100"
+                          title="Actions"
                         >
-                          <MessageCircle size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(shipment.id)}
-                          className="text-blue-600 hover:text-blue-900 mr-4"
-                        >
-                          <Edit size={18} />
-                        </button>
-                        <button
-                          onClick={() => setDeleteTarget(shipment)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <Trash2 size={18} />
+                          <MoreVertical size={18} />
                         </button>
                       </td>
                     </tr>
@@ -1993,6 +2066,79 @@ export default function Admin() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Menu d'actions */}
+      {menuOpen && (() => {
+        const sh = shipments.find((x) => x.id === menuOpen.id);
+        if (!sh) return null;
+        return (
+          <>
+            <div className="fixed inset-0 z-[998]" onClick={() => setMenuOpen(null)} />
+            <div
+              className="fixed z-[999] w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-1 text-sm"
+              style={{ top: menuOpen.top, right: menuOpen.right }}
+            >
+              <button onClick={() => { setMenuOpen(null); handleEdit(sh.id); }} className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-50 text-gray-700">
+                <Edit size={16} /> Modifier
+              </button>
+              <button onClick={() => handleOpenQrCode(sh.tracking_number)} className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-50 text-gray-700">
+                <QrCode size={16} /> QR code de suivi
+              </button>
+              <button onClick={() => handleOpenWhatsApp(sh.tracking_number)} className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-50 text-green-700">
+                <MessageCircle size={16} /> Envoyer via WhatsApp
+              </button>
+              <button onClick={() => { setMenuOpen(null); setDeleteTarget(sh); }} className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-red-50 text-red-600">
+                <Trash2 size={16} /> Supprimer
+              </button>
+            </div>
+          </>
+        );
+      })()}
+
+      {/* Modal QR code */}
+      {qrModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[999] p-4">
+          <div className="bg-white rounded-lg shadow-2xl max-w-sm w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900">QR code de suivi</h3>
+              <button onClick={() => { setQrModal(null); setQrPhone(''); }} className="text-gray-400 hover:text-gray-600">
+                <X size={24} />
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 mb-3 text-center">
+              Colis <span className="font-bold">{qrModal.trackingNumber}</span>. Le scan ouvre la page de suivi avec le code déjà renseigné.
+            </p>
+            <img src={qrModal.dataUrl} alt={`QR code ${qrModal.trackingNumber}`} className="mx-auto w-64 h-64 border border-gray-200 rounded" />
+            <div className="mt-5 grid grid-cols-2 gap-2">
+              <button onClick={handleDownloadQr} className="flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                <Download size={16} /> Télécharger
+              </button>
+              <button onClick={handleCopyQr} className="flex items-center justify-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                <Copy size={16} /> Copier l'image
+              </button>
+            </div>
+            <div className="mt-4 border-t border-gray-200 pt-4">
+              <div className="flex items-center mb-2">
+                <span className="inline-flex items-center px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-700 text-sm font-medium">+237</span>
+                <input
+                  type="tel"
+                  value={qrPhone}
+                  onChange={(e) => setQrPhone(e.target.value.replace(/[^0-9]/g, ''))}
+                  maxLength={9}
+                  placeholder="N° du client (optionnel)"
+                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                />
+              </div>
+              <button onClick={handleSendQrWhatsApp} className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                <MessageCircle size={16} /> Envoyer via WhatsApp
+              </button>
+            </div>
+            <button onClick={handleCopyTrackingLink} className="mt-2 w-full px-3 py-2 text-sm text-gray-600 hover:text-gray-900">
+              Copier le lien de suivi
+            </button>
           </div>
         </div>
       )}
