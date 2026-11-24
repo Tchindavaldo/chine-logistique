@@ -202,6 +202,8 @@ function ProgressSection({ shipment }: { shipment: Shipment }) {
 
 export default function Track() {
   const [searchParams] = useSearchParams();
+  // Page ouverte via lien / QR code : le champ de saisie est masqué, le colis s'affiche directement
+  const hasCode = !!searchParams.get('tracking');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [shipment, setShipment] = useState<Shipment | null>(null);
   const [loading, setLoading] = useState(false);
@@ -319,6 +321,7 @@ export default function Track() {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-2 sm:px-4">
           <div className="max-w-6xl mx-auto">
+            {!hasCode ? (<>
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold mb-6">Enter Tracking Number Here</h2>
             </div>
@@ -347,6 +350,9 @@ export default function Track() {
                 <div className="text-center text-red-600 mt-4 font-medium">{error}</div>
               )}
             </form>
+            </>) : error ? (
+              <div className="text-center text-red-600 mb-8 font-medium">{error}</div>
+            ) : null}
 
             {shipment && (
               <div className="bg-gray-50 rounded-lg overflow-hidden shadow-lg">
@@ -627,7 +633,14 @@ export default function Track() {
               </div>
             )}
 
-            {!shipment && !loading && !error && (
+            {hasCode && !shipment && !error && (
+              <div className="text-center text-gray-500 mt-8">
+                <Package size={64} className="mx-auto mb-4 text-gray-300" />
+                <p>Loading your shipment...</p>
+              </div>
+            )}
+
+            {!hasCode && !shipment && !loading && !error && (
               <div className="text-center text-gray-500 mt-8">
                 <Package size={64} className="mx-auto mb-4 text-gray-300" />
                 <p>Enter a tracking number above to see your shipment status</p>
