@@ -1,7 +1,7 @@
 import { effectiveElapsedDays, renderPauseMessage } from '../lib/pause';
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Package, User, MapPin } from 'lucide-react';
+import { Package, User, MapPin } from 'lucide-react';
 import QRCode from 'qrcode';
 import { supabase } from '../lib/supabase';
 import SEO from '../components/SEO';
@@ -202,9 +202,8 @@ function ProgressSection({ shipment }: { shipment: Shipment }) {
 
 export default function Track() {
   const [searchParams] = useSearchParams();
-  // Page ouverte via lien / QR code : le champ de saisie est masqué, le colis s'affiche directement
+  // Plus de champ de saisie : la page s'ouvre via lien / QR code (?tracking=CODE)
   const hasCode = !!searchParams.get('tracking');
-  const [trackingNumber, setTrackingNumber] = useState('');
   const [shipment, setShipment] = useState<Shipment | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -230,7 +229,7 @@ export default function Track() {
   const handleTrack = useCallback(async (e: React.FormEvent | null, initialTracking?: string) => {
     if (e) e.preventDefault();
 
-    const tracking = initialTracking || trackingNumber.trim();
+    const tracking = initialTracking?.trim();
     if (!tracking) return;
 
     setLoading(true);
@@ -259,7 +258,7 @@ export default function Track() {
     } finally {
       setLoading(false);
     }
-  }, [trackingNumber, generateQRCode]);
+  }, [generateQRCode]);
 
   useEffect(() => {
     const initialTracking = searchParams.get('tracking');
@@ -321,38 +320,9 @@ export default function Track() {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-2 sm:px-4">
           <div className="max-w-6xl mx-auto">
-            {!hasCode ? (<>
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold mb-6">Enter Tracking Number Here</h2>
-            </div>
-
-            <form onSubmit={(e) => handleTrack(e)} className="mb-12">
-              <div className="flex flex-col sm:flex-row gap-4 max-w-3xl mx-auto">
-                <div className="flex-1 relative">
-                  <input
-                    type="text"
-                    placeholder="Enter your tracking number e.g CC-10-751490"
-                    value={trackingNumber}
-                    onChange={(e) => setTrackingNumber(e.target.value)}
-                    className="w-full px-6 py-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-red-600 text-lg"
-                  />
-                  <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={24} />
-                </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition shadow-lg whitespace-nowrap disabled:opacity-50"
-                >
-                  {loading ? 'Tracking...' : 'Track Your Shipment'}
-                </button>
-              </div>
-              {error && (
-                <div className="text-center text-red-600 mt-4 font-medium">{error}</div>
-              )}
-            </form>
-            </>) : error ? (
+            {error && (
               <div className="text-center text-red-600 mb-8 font-medium">{error}</div>
-            ) : null}
+            )}
 
             {shipment && (
               <div className="bg-gray-50 rounded-lg overflow-hidden shadow-lg">
@@ -643,7 +613,7 @@ export default function Track() {
             {!hasCode && !shipment && !loading && !error && (
               <div className="text-center text-gray-500 mt-8">
                 <Package size={64} className="mx-auto mb-4 text-gray-300" />
-                <p>Enter a tracking number above to see your shipment status</p>
+                <p>Scan the QR code or open the tracking link you received to see your shipment status</p>
               </div>
             )}
           </div>
